@@ -6,8 +6,8 @@ using UnityEngine;
 //Generic Grid script, can be used to create a dynamic grid that contains any kind of object
 public class Grid<TGridObject>
 {
-    public event EventHandler<OnGridValueChangedEventArgs> OnGridValueChanged;
-    public class OnGridValueChangedEventArgs : EventArgs
+    public event EventHandler<OnGridObjectChangedEventArgs> OnGridObjectChanged;
+    public class OnGridObjectChangedEventArgs : EventArgs
     {
         public int x;
         public int y;
@@ -19,10 +19,9 @@ public class Grid<TGridObject>
     private float cellSize;
     private Vector3 originPosition;
     private TGridObject[,] gridArray;
-    private TextMesh[,] debugTextArray;
-
+    
     //constructor, also takes in a Func parameter to create any manner of custom object
-    public Grid(int width, int height, float cellSize, Vector3 originPosition, Func<TGridObject> createGridObject)
+    public Grid(int width, int height, float cellSize, Vector3 originPosition, Func<Grid<TGridObject>, int, int, TGridObject> createGridObject)
     {
 
         //set variables
@@ -38,7 +37,7 @@ public class Grid<TGridObject>
         {
             for (int y = 0; y < gridArray.GetLength(1); y++)
             {
-                gridArray[x, y] = createGridObject();
+                gridArray[x, y] = createGridObject(this, x, y);
             }
         }
 
@@ -46,14 +45,14 @@ public class Grid<TGridObject>
         if (showDebug)
         {
             //Array that contains text for each grid square
-            debugTextArray = new TextMesh[width, height];
+            TextMesh[,] debugTextArray = new TextMesh[width, height];
 
             //create said text for grid and draw lines around each square (find a better way to draw these)
             for (int x = 0; x < gridArray.GetLength(0); x++)
             {
                 for (int y = 0; y < gridArray.GetLength(1); y++)
                 {
-                    debugTextArray[x, y] = CreateWorldText(null, gridArray[x, y]?.ToString(), GetWorldPosition(x, y) + new Vector3(cellSize, cellSize) * 0.5f, 20, Color.white, TextAnchor.MiddleCenter);
+                    debugTextArray[x, y] = CreateWorldText(gridArray[x, y]?.ToString(), null, GetWorldPosition(x, y) + new Vector3(cellSize, cellSize) * .5f, 30, Color.white, TextAnchor.MiddleCenter);
 
                     Debug.DrawLine(GetWorldPosition(x, y), GetWorldPosition(x, y + 1), Color.white, 100f);
                     Debug.DrawLine(GetWorldPosition(x, y), GetWorldPosition(x + 1, y), Color.white, 100f);
@@ -62,19 +61,11 @@ public class Grid<TGridObject>
             Debug.DrawLine(GetWorldPosition(0, height), GetWorldPosition(width, height), Color.white, 100f);
             Debug.DrawLine(GetWorldPosition(width, 0), GetWorldPosition(width, height), Color.white, 100f);
 
-            OnGridValueChanged += (object sender, OnGridValueChangedEventArgs eventArgs) =>
+            OnGridObjectChanged += (object sender, OnGridObjectChangedEventArgs eventArgs) =>
             {
                 debugTextArray[eventArgs.x, eventArgs.y].text = gridArray[eventArgs.x, eventArgs.y]?.ToString();
             };
-        }
-        //populate gridArray
-        /*for (int x = 0; x < gridArray.GetLength(0); x++)
-        {
-            for (int y = 0; y < gridArray.GetLength(1); y++)
-            {
-                gridArray[x, y] = createGridObject();
-            }
-        }*/
+        }        
     }
 
     public int GetHeight()
@@ -99,32 +90,37 @@ public class Grid<TGridObject>
     }
 
     //gets the X and Y values using the world position
-    private void GetXY(Vector3 worldPosition, out int x, out int y)
+    public void GetXY(Vector3 worldPosition, out int x, out int y)
     {
         x = Mathf.FloorToInt((worldPosition - originPosition).x / cellSize);
         y = Mathf.FloorToInt((worldPosition - originPosition).y / cellSize);
     }
 
     //sets the value of a given grid square using X and Y values
-    public void SetValue(int x, int y, TGridObject value)
+    public void SetGridObject(int x, int y, TGridObject value)
     {
         if (x >= 0 && y >= 0 && x < width && y < height)
         {
             gridArray[x, y] = value;
-            if (OnGridValueChanged != null) OnGridValueChanged(this, new OnGridValueChangedEventArgs { x = x, y = y });
+            if (OnGridObjectChanged != null) OnGridObjectChanged(this, new OnGridObjectChangedEventArgs { x = x, y = y });
         }
     }
 
+    public void TriggerGridObjectChanged(int x, int y)
+    {
+        if (OnGridObjectChanged != null) OnGridObjectChanged(this, new OnGridObjectChangedEventArgs { x = x, y = y });
+    }
+
     //sets the value of a given grid square using world position
-    public void SetValue(Vector3 worldPosition, TGridObject value)
+    public void SetGridObject(Vector3 worldPosition, TGridObject value)
     {
         int x, y;
         GetXY(worldPosition, out x, out y);
-        SetValue(x, y, value);
+        SetGridObject(x, y, value);
     }
 
     //gets the value of a grid square using x and y values
-    public TGridObject GetValue(int x, int y)
+    public TGridObject GetGridObject(int x, int y)
     {
         if(x >= 0 && y >= 0 && x < width && y < height)
         {
@@ -137,15 +133,21 @@ public class Grid<TGridObject>
     }
 
     //gets the value of a grid square using world position
-    public TGridObject GetValue(Vector3 worldPosition)
+    public TGridObject GetGridObject(Vector3 worldPosition)
     {
         int x, y;
         GetXY(worldPosition, out x, out y);
-        return GetValue(x, y);
+        return GetGridObject(x, y);
     }
 
-    //code to generate text inside a grid square (long and boring) Add to different class maybe
-    public static TextMesh CreateWorldText(Transform parent, string text, Vector3 localPosition, int fontSize, Color color, TextAnchor textAnchor)
+    //code to generate text inside a grid square (long and boring) Add to different class later or remove
+    public static TextMesh CreateWorldText(string text, Transform parent = null, Vector3 localPosition = default(Vector3), int fontSize = 40, Color? color = null, TextAnchor textAnchor = TextAnchor.UpperLeft, TextAlignment textAlignment = TextAlignment.Left, int sortingOrder = 5000)
+    {
+        if (color == null) color = Color.white;
+        return CreateWorldText(parent, text, localPosition, fontSize, (Color)color, textAnchor, textAlignment, sortingOrder);
+    }
+
+    public static TextMesh CreateWorldText(Transform parent, string text, Vector3 localPosition, int fontSize, Color color, TextAnchor textAnchor, TextAlignment textAlignment, int sortingOrder)
     {
         GameObject gameObject = new GameObject("World_Text", typeof(TextMesh));
         Transform transform = gameObject.transform;
@@ -153,9 +155,11 @@ public class Grid<TGridObject>
         transform.localPosition = localPosition;
         TextMesh textMesh = gameObject.GetComponent<TextMesh>();
         textMesh.anchor = textAnchor;
+        textMesh.alignment = textAlignment;
         textMesh.text = text;
-        textMesh.fontSize = 40;
+        textMesh.fontSize = fontSize;
         textMesh.color = color;
+        textMesh.GetComponent<MeshRenderer>().sortingOrder = sortingOrder;
         return textMesh;
     }
 }

@@ -18,10 +18,10 @@ public class HeatMapVisual : MonoBehaviour
         this.grid = grid;
         UpdateHeatMapVisual();
 
-        grid.OnGridValueChanged += Grid_OnGridValueChanged;
+        grid.OnGridObjectChanged += Grid_OnGridObjectChanged;
     }
 
-    private void Grid_OnGridValueChanged(object sender, Grid<int>.OnGridValueChangedEventArgs e)
+    private void Grid_OnGridObjectChanged(object sender, Grid<int>.OnGridObjectChangedEventArgs e)
     {
         UpdateHeatMapVisual();
     }
@@ -37,7 +37,7 @@ public class HeatMapVisual : MonoBehaviour
                 int index = x * grid.GetHeight() + y;
                 Vector3 quadSize = new Vector3(1, 1) * grid.GetCellSize();
 
-                int gridValue = grid.GetValue(x, y);
+                int gridValue = grid.GetGridObject(x, y);
                 float gridValueNormalized = (float)gridValue / 100;
                 Vector2 gridValueUV = new Vector2(gridValueNormalized, 0f);
                 MeshUtils.AddToMeshArrays(vertices, uv, triangles, index, grid.GetWorldPosition(x, y) + quadSize * 0.5f, 0f, quadSize, gridValueUV, gridValueUV);
