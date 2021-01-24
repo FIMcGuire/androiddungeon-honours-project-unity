@@ -140,7 +140,7 @@ public class Grid<TGridObject>
         return GetGridObject(x, y);
     }
 
-    //code to generate text inside a grid square (long and boring) Add to different class later or remove
+    //code to generate text inside a grid square (long and boring) Add to different class later or REMOVE
     public static TextMesh CreateWorldText(string text, Transform parent = null, Vector3 localPosition = default(Vector3), int fontSize = 40, Color? color = null, TextAnchor textAnchor = TextAnchor.UpperLeft, TextAlignment textAlignment = TextAlignment.Left, int sortingOrder = 5000)
     {
         if (color == null) color = Color.white;

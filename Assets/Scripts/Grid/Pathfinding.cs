@@ -16,7 +16,7 @@ public class Pathfinding
     public Pathfinding(int width, int height)
     {
         Instance = this;
-        grid = new Grid<PathNode>(width, height, 10f, Vector3.zero, (Grid<PathNode> g, int x, int y) => new PathNode(g, x, y));
+        grid = new Grid<PathNode>(width, height, 50f, Vector3.zero, (Grid<PathNode> g, int x, int y) => new PathNode(g, x, y));
     }
 
     public Grid<PathNode> GetGrid()
@@ -116,7 +116,7 @@ public class Pathfinding
         return null;
     }
 
-    private List<PathNode> GetNeighbourList(PathNode currentNode)
+    public List<PathNode> GetNeighbourList(PathNode currentNode)
     {
         List<PathNode> neighbourList = new List<PathNode>();
 

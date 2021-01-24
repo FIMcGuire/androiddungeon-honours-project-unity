@@ -5,12 +5,16 @@ using UnityEngine;
 public class PanZoom : MonoBehaviour
 {
     Vector3 touchStart;
-    public float zoomOutMin = 1;
-    public float zoomOutMax = 8;
+    public float zoomOutMin = 25;
+    public float zoomOutMax = 100;
+
+    Pathfinding pathfinding;
 
     void Start()
     {
-        
+        pathfinding = Pathfinding.Instance;
+        zoomOutMax = pathfinding.GetGrid().GetCellSize() * 10;
+        zoomOutMin = pathfinding.GetGrid().GetCellSize() * 5;
     }
 
     // Update is called once per frame
