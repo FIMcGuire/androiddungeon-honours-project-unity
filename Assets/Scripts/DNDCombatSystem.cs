@@ -11,7 +11,7 @@ public class DNDCombatSystem : MonoBehaviour
         //This will change based on PC movement speed
         int maxMoveDistance = 5;
         Grid<GridObject> grid = GameHandler_DND.Instance.GetGrid();
-        grid.GetXY(dndCombatUnit.GetPosition(), out int unitX, out int unitY);
+        //grid.GetXY(dndCombatUnit.GetPosition(), out int unitX, out int unitY);
     }
 
     public class GridObject
