@@ -11,7 +11,6 @@ public class DNDCombatUnit : NetworkBehaviour
     //Pathfinding grid
     private Pathfinding pathfinding;
 
-    float f;
     public void Start()
     {
         pathfinding = Pathfinding.Instance;
@@ -25,9 +24,10 @@ public class DNDCombatUnit : NetworkBehaviour
         HandleMovement();
     }
 
+    [Client]
     void HandleMovement()
     {
-        if (isLocalPlayer)
+        if (hasAuthority)
         {
             /*
             //if left click draw path using A* between dwarf and mouse
@@ -67,6 +67,7 @@ public class DNDCombatUnit : NetworkBehaviour
                 else
                 {
                     cell = pathfinding.GetGrid().GetGridObject(originX, originY);
+                    movementPath.Add(new Vector3(originX, originY) * pathfinding.GetGrid().GetCellSize() + Vector3.one * pathfinding.GetGrid().GetCellSize() * .5f);
                 }
 
                 //generate list of available neighbouring nodes/cells
@@ -114,11 +115,28 @@ public class DNDCombatUnit : NetworkBehaviour
     //loops through a list of Vector3s and moves the dwarf between them every .5f, then clears the list
     IEnumerator tester()
     {
+        for(int i=0;i<(movementPath.Count-1);++i)
+        {
+            var p0 = movementPath[i];
+            var p1 = movementPath[i+1];
+            int steps = 10;
+            const float durationPerTile = 0.5f;
+            for(int j=0;j< steps; ++j)
+            {
+                transform.position = Vector3.Lerp(p0, p1, j / (float)steps);
+                yield return new WaitForSeconds(durationPerTile/steps);
+            }
+            
+        }
+        transform.position = movementPath[movementPath.Count - 1];
+
+#if false
         foreach (Vector3 location in movementPath)
         {
             transform.position = location;
             yield return new WaitForSeconds(0.5f);
         }
+#endif
         movementPath.Clear();
     }
 

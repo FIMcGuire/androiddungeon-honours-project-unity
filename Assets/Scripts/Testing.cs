@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using Mirror;
 
-public class Testing : MonoBehaviour
+public class Testing : NetworkBehaviour
 {
-    [SerializeField] private PathfindingVisual pathfindingVisual;
-
     //create grid of any type
     private Grid<HeatMapGridObject> grid;
     private Grid<StringGridObject> stringGrid;
@@ -18,7 +17,6 @@ public class Testing : MonoBehaviour
     private void Start()
     {
         pathfinding = new Pathfinding(10, 10);
-        pathfindingVisual.SetGrid(pathfinding.GetGrid());
 
         //heatMapVisual.SetGrid(grid);
         //heatMapBoolVisual.SetGrid(grid);
@@ -27,7 +25,7 @@ public class Testing : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetMouseButtonDown(1))
+        if (Input.GetMouseButtonDown(1) && isServer)
         {
             Vector3 mouseWorldPosition = Utils.GetMouseWorldPosition();
             pathfinding.GetGrid().GetXY(mouseWorldPosition, out int x, out int y);
