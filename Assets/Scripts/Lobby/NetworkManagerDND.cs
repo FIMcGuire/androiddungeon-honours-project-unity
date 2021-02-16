@@ -7,18 +7,24 @@ using UnityEngine.SceneManagement;
 
 public class NetworkManagerDND : NetworkManager
 {
+    //min number of players in order to start game
     [SerializeField] private int minPlayers = 2;
+    //scene for the menuScene (i.e. scene game starts on)
     [Scene] [SerializeField] private string menuScene = string.Empty;
 
+    //prefab for lobby client object
     [Header("Room")]
     [SerializeField] private NetworkRoomPlayerDND roomPlayerPrefab = null;
 
+    //prefab for game client object
     [Header("Game")]
     [SerializeField] private NetworkGamePlayerDND gamePlayerPrefab = null;
+    [SerializeField] private GameObject playerSpawnSystem = null;
 
     public static event Action OnClientConnected;
     public static event Action OnClientDisconnected;
     public static event Action<NetworkConnection> OnServerReadied;
+    public static event Action OnServerStopped;
 
     public List<NetworkRoomPlayerDND> RoomPlayers { get; } = new List<NetworkRoomPlayerDND>();
     public List<NetworkGamePlayerDND> GamePlayers { get; } = new List<NetworkGamePlayerDND>();
@@ -94,7 +100,10 @@ public class NetworkManagerDND : NetworkManager
 
     public override void OnStopServer()
     {
+        OnServerStopped?.Invoke();
+
         RoomPlayers.Clear();
+        GamePlayers.Clear();
     }
 
     public void NotifyPlayersOfReadyState()
@@ -145,6 +154,15 @@ public class NetworkManagerDND : NetworkManager
         }
 
         base.ServerChangeScene(newSceneName);
+    }
+
+    public override void OnServerSceneChanged(string sceneName)
+    {
+        if (sceneName.StartsWith("Scene_DND"))
+        {
+            GameObject playerSpawnSystemInstance = Instantiate(playerSpawnSystem);
+            NetworkServer.Spawn(playerSpawnSystemInstance);
+        }
     }
 
     public override void OnServerReady(NetworkConnection conn)

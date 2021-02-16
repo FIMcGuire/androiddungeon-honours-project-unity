@@ -6,9 +6,6 @@ using Mirror;
 
 public class Testing : NetworkBehaviour
 {
-    //create grid of any type
-    private Grid<HeatMapGridObject> grid;
-    private Grid<StringGridObject> stringGrid;
 
     //Pathfinding grid
     private Pathfinding pathfinding;
@@ -16,22 +13,15 @@ public class Testing : NetworkBehaviour
     //Runs at start
     private void Start()
     {
-        pathfinding = new Pathfinding(10, 10);
-
-        //heatMapVisual.SetGrid(grid);
-        //heatMapBoolVisual.SetGrid(grid);
-        //heatMapGenericVisual.SetGrid(grid);
+        createGrid();
     }
 
-    private void Update()
+    [Server]
+    void createGrid()
     {
-        if (Input.GetMouseButtonDown(1) && isServer)
-        {
-            Vector3 mouseWorldPosition = Utils.GetMouseWorldPosition();
-            pathfinding.GetGrid().GetXY(mouseWorldPosition, out int x, out int y);
-            pathfinding.GetNode(x, y).SetIsWalkable(!pathfinding.GetNode(x, y).isWalkable);
-        }
+        pathfinding = new Pathfinding(10, 10);
     }
+    
 }
 
 public class HeatMapGridObject

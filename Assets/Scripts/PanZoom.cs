@@ -10,16 +10,21 @@ public class PanZoom : MonoBehaviour
 
     Pathfinding pathfinding;
 
-    void Start()
+    void InitPathfinding()
     {
-        pathfinding = Pathfinding.Instance;
-        zoomOutMax = pathfinding.GetGrid().GetCellSize() * 10;
-        zoomOutMin = pathfinding.GetGrid().GetCellSize() * 5;
+        if (pathfinding == null && Pathfinding.Instance != null)
+        {
+            pathfinding = Pathfinding.Instance;
+            zoomOutMax = pathfinding.GetGrid().GetCellSize() * 10;
+            zoomOutMin = pathfinding.GetGrid().GetCellSize() * 5;
+        }   
     }
 
     // Update is called once per frame
     void Update()
     {
+        InitPathfinding();
+
         if (Input.GetMouseButtonDown(1))
         {
             touchStart = Camera.main.ScreenToWorldPoint(Input.mousePosition);

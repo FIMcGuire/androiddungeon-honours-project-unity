@@ -5,17 +5,23 @@ using Mirror;
 
 public class DNDCombatUnit : NetworkBehaviour
 {
+    [SerializeField] private GameObject testPrefab = null;
 
+    //List of Vector3 objects to move playercharacter
     List<Vector3> movementPath = new List<Vector3>();
 
     //Pathfinding grid
-    private Pathfinding pathfinding;
+    private Pathfinding pathfinding = Pathfinding.Instance;
+
+    private bool walking = false;
 
     public void Start()
     {
-        pathfinding = Pathfinding.Instance;
-        transform.localScale = new Vector3(pathfinding.GetGrid().GetCellSize() / 5, pathfinding.GetGrid().GetCellSize() / 5, 1);
-        transform.position = new Vector3(0, 0) * pathfinding.GetGrid().GetCellSize() + Vector3.one * pathfinding.GetGrid().GetCellSize() * .5f;
+        //Code to ensure scale of player game objects match scale of Grid
+        //transform.localScale = new Vector3(pathfinding.GetGrid().GetCellSize() / 5, pathfinding.GetGrid().GetCellSize() / 5, 1);
+
+        //Code to move player game objects to 0,0 on Grid FIND A BETTER WAY SO THAT TWO OBJECTS CANNOT OCCUPY SAME SPACE
+        //transform.position = new Vector3(0, 0) * pathfinding.GetGrid().GetCellSize() + Vector3.one * pathfinding.GetGrid().GetCellSize() * .5f;
     }
 
     //Runs every frame
@@ -49,7 +55,7 @@ public class DNDCombatUnit : NetworkBehaviour
             }*/
 
             //if middle mouse click, add nearby cell to list of movement
-            if (Input.GetMouseButtonDown(2))
+            if (Input.GetMouseButtonDown(2) && !walking)
             {
                 //Get the coordinates of the mouse and the dwarf
                 Vector3 mouseWorldPosition = Utils.GetMouseWorldPosition();
@@ -67,7 +73,9 @@ public class DNDCombatUnit : NetworkBehaviour
                 else
                 {
                     cell = pathfinding.GetGrid().GetGridObject(originX, originY);
-                    movementPath.Add(new Vector3(originX, originY) * pathfinding.GetGrid().GetCellSize() + Vector3.one * pathfinding.GetGrid().GetCellSize() * .5f);
+                    Vector3 originCell = new Vector3(originX, originY) * pathfinding.GetGrid().GetCellSize() + Vector3.one * pathfinding.GetGrid().GetCellSize() * .5f;
+                    originCell.z = 0;
+                    movementPath.Add(originCell);
                 }
 
                 //generate list of available neighbouring nodes/cells
@@ -85,14 +93,22 @@ public class DNDCombatUnit : NetworkBehaviour
                         //add the given movement to the list of Vector3 objects
                         Debug.Log("Okay!");
                         Vector3 cellPos = new Vector3(x, y) * pathfinding.GetGrid().GetCellSize() + Vector3.one * pathfinding.GetGrid().GetCellSize() * .5f;
+                        cellPos.z = 0;
                         movementPath.Add(cellPos);
                     }
                 }
             }
 
+            //Put movement UI on camera-tied prefab
             if (Input.GetKeyDown(KeyCode.J))
             {
                 toggleWalk();
+            }
+
+            if (Input.GetMouseButtonDown(1) && isServer)
+            {
+                //Debug.Log("cmdQuad");
+                cmdQuad();
             }
 
             //if middle click move dwarf along path
@@ -111,33 +127,52 @@ public class DNDCombatUnit : NetworkBehaviour
         }
     }
 
+    [Command]
+    void cmdQuad()
+    {
+        Vector3 mouseWorldPosition = Utils.GetMouseWorldPosition();
+        pathfinding.GetGrid().GetXY(mouseWorldPosition, out int x, out int y);
+        pathfinding.GetNode(x, y).SetIsWalkable(!pathfinding.GetNode(x, y).isWalkable);
+
+        Vector3 cellPos = new Vector3(x, y) * pathfinding.GetGrid().GetCellSize() + Vector3.one * pathfinding.GetGrid().GetCellSize() * .5f;
+        cellPos.z = 0;
+
+        GameObject tester = Instantiate(testPrefab, cellPos, Quaternion.identity);
+        tester.transform.localScale = new Vector3(pathfinding.GetGrid().GetCellSize(), pathfinding.GetGrid().GetCellSize(), 1);
+        NetworkServer.Spawn(tester);
+    }
+
     //This seems like a poor way to do this but it works for now
     //loops through a list of Vector3s and moves the dwarf between them every .5f, then clears the list
     IEnumerator tester()
     {
-        for(int i=0;i<(movementPath.Count-1);++i)
+        walking = true;
+        //run through each position in movementPath
+        for(int i=0; i<(movementPath.Count-1); i++)
         {
-            var p0 = movementPath[i];
-            var p1 = movementPath[i+1];
+            //calculate start and end points for moving from one cell to the next
+            var pointA = movementPath[i];
+            var pointB = movementPath[i+1];
+            
+            //steps between each cell
             int steps = 10;
+
+            //time to move from cell to cell
             const float durationPerTile = 0.5f;
+
+            //for loop to move player from tile to tile
             for(int j=0;j< steps; ++j)
             {
-                transform.position = Vector3.Lerp(p0, p1, j / (float)steps);
+                transform.position = Vector3.Lerp(pointA, pointB, j / (float)steps);
                 yield return new WaitForSeconds(durationPerTile/steps);
             }
             
         }
+        //move player to FINAL point, as without this player object will be just shy
         transform.position = movementPath[movementPath.Count - 1];
 
-#if false
-        foreach (Vector3 location in movementPath)
-        {
-            transform.position = location;
-            yield return new WaitForSeconds(0.5f);
-        }
-#endif
         movementPath.Clear();
+        walking = false;
     }
 
     public void toggleWalk()

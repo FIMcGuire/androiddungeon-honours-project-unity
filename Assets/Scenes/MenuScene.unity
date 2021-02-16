@@ -1070,7 +1070,6 @@ GameObject:
   - component: {fileID: 519420032}
   - component: {fileID: 519420031}
   - component: {fileID: 519420029}
-  - component: {fileID: 519420030}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -1086,20 +1085,6 @@ AudioListener:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 519420028}
   m_Enabled: 1
---- !u!114 &519420030
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 519420028}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1f54f57dc95acdc42a89da426f62b9c1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  zoomOutMin: 100
-  zoomOutMax: 500
 --- !u!20 &519420031
 Camera:
   m_ObjectHideFlags: 0
@@ -1531,6 +1516,7 @@ MonoBehaviour:
   menuScene: Assets/Scenes/MenuScene.unity
   roomPlayerPrefab: {fileID: 5448064573662245959, guid: c99b06255e32eb34cb5df0dcfd4c5b07, type: 3}
   gamePlayerPrefab: {fileID: 6283469160916580787, guid: 3ef12326c543651479dde0205e0b688c, type: 3}
+  playerSpawnSystem: {fileID: 3068856049573514615, guid: 635ca3b39fc398d4e84dc655957921ea, type: 3}
 --- !u!4 &713464897
 Transform:
   m_ObjectHideFlags: 0
@@ -2352,7 +2338,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\u200B"
+  m_text: localhost
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
