@@ -88,11 +88,18 @@ public class NetworkManagerDND : NetworkManager
     {
         if (conn.identity != null)
         {
-            var player = conn.identity.GetComponent<NetworkRoomPlayerDND>();
+            var player = conn.identity.GetComponent<NetworkBehaviour>();
 
-            RoomPlayers.Remove(player);
+            if (player is NetworkRoomPlayerDND roomPlayer)
+            {
+                RoomPlayers.Remove(roomPlayer);
 
-            NotifyPlayersOfReadyState();
+                NotifyPlayersOfReadyState();
+            }
+            else if (player is NetworkGamePlayerDND gamePlayer)
+            {
+                GamePlayers.Remove(gamePlayer);
+            }
         }
 
         base.OnServerDisconnect(conn);
@@ -104,6 +111,8 @@ public class NetworkManagerDND : NetworkManager
 
         RoomPlayers.Clear();
         GamePlayers.Clear();
+
+        ServerChangeScene(menuScene);
     }
 
     public void NotifyPlayersOfReadyState()
@@ -161,6 +170,7 @@ public class NetworkManagerDND : NetworkManager
         if (sceneName.StartsWith("Scene_DND"))
         {
             GameObject playerSpawnSystemInstance = Instantiate(playerSpawnSystem);
+
             NetworkServer.Spawn(playerSpawnSystemInstance);
         }
     }

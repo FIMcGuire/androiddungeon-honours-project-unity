@@ -24,7 +24,7 @@ public class NetworkGamePlayerDND : NetworkBehaviour
     public override void OnStartClient()
     {
         //Likely not useful, unlikely to change scenes as App intended for combat ONLY
-        DontDestroyOnLoad(gameObject);
+        if (Room.dontDestroyOnLoad) { DontDestroyOnLoad(gameObject); }
 
         Room.GamePlayers.Add(this);
     }

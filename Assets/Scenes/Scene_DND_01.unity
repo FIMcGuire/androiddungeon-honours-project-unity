@@ -200,7 +200,7 @@ GameObject:
   - component: {fileID: 276733525}
   - component: {fileID: 276733524}
   m_Layer: 0
-  m_Name: Testing
+  m_Name: Game Handler
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -215,9 +215,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 276733523}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 837d185906aedd64ab608144b0f8b220, type: 3}
+  m_Script: {fileID: 11500000, guid: 32850e8a40f51e247836e7eeb66db69e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  syncMode: 0
+  syncInterval: 0.1
+  mapWidth: 10
+  mapHeight: 10
 --- !u!4 &276733525
 Transform:
   m_ObjectHideFlags: 0

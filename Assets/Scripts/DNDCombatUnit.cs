@@ -15,8 +15,12 @@ public class DNDCombatUnit : NetworkBehaviour
 
     private bool walking = false;
 
+    List<GameObject> quadList = new List<GameObject>();
+
     public void Start()
     {
+        transform.parent = GameObject.Find("PlayerObjects").transform;
+
         //Code to ensure scale of player game objects match scale of Grid
         //transform.localScale = new Vector3(pathfinding.GetGrid().GetCellSize() / 5, pathfinding.GetGrid().GetCellSize() / 5, 1);
 
@@ -59,7 +63,9 @@ public class DNDCombatUnit : NetworkBehaviour
             {
                 //Get the coordinates of the mouse and the dwarf
                 Vector3 mouseWorldPosition = Utils.GetMouseWorldPosition();
-                pathfinding.GetGrid().GetXY(mouseWorldPosition, out int x, out int y);
+                Grid<PathNode> test = pathfinding.GetGrid();
+                test.GetXY(mouseWorldPosition, out int x, out int y);
+                //pathfinding.GetGrid().GetXY(mouseWorldPosition, out int x, out int y);
                 pathfinding.GetGrid().GetXY(transform.position, out int originX, out int originY);
 
                 //if movementPath list contains any Vector3's, get Pathnode object from latest position in the list. Else, get Pathnode object from origin position of dwarf.
@@ -102,12 +108,12 @@ public class DNDCombatUnit : NetworkBehaviour
             //Put movement UI on camera-tied prefab
             if (Input.GetKeyDown(KeyCode.J))
             {
-                toggleWalk();
+                cmdtoggleWalk();
             }
-
+            
+            
             if (Input.GetMouseButtonDown(1) && isServer)
             {
-                //Debug.Log("cmdQuad");
                 cmdQuad();
             }
 
@@ -132,14 +138,28 @@ public class DNDCombatUnit : NetworkBehaviour
     {
         Vector3 mouseWorldPosition = Utils.GetMouseWorldPosition();
         pathfinding.GetGrid().GetXY(mouseWorldPosition, out int x, out int y);
-        pathfinding.GetNode(x, y).SetIsWalkable(!pathfinding.GetNode(x, y).isWalkable);
 
-        Vector3 cellPos = new Vector3(x, y) * pathfinding.GetGrid().GetCellSize() + Vector3.one * pathfinding.GetGrid().GetCellSize() * .5f;
-        cellPos.z = 0;
+        if (pathfinding.GetNode(x, y).isWalkable)
+        {
+            pathfinding.GetNode(x, y).SetIsWalkable(false);
 
-        GameObject tester = Instantiate(testPrefab, cellPos, Quaternion.identity);
-        tester.transform.localScale = new Vector3(pathfinding.GetGrid().GetCellSize(), pathfinding.GetGrid().GetCellSize(), 1);
-        NetworkServer.Spawn(tester);
+            Vector3 cellPos = new Vector3(x, y) * pathfinding.GetGrid().GetCellSize() + Vector3.one * pathfinding.GetGrid().GetCellSize() * .5f;
+            cellPos.z = 0;
+
+            GameObject tester = Instantiate(testPrefab, cellPos, Quaternion.identity);
+            tester.name = x.ToString() + "/" + y.ToString();
+            //quadList.Add(tester);
+            tester.transform.localScale = new Vector3(pathfinding.GetGrid().GetCellSize(), pathfinding.GetGrid().GetCellSize(), 1);
+            NetworkServer.Spawn(tester);
+        }
+        else
+        {
+            Debug.Log("here");
+            pathfinding.GetNode(x, y).SetIsWalkable(true);
+            GameObject tester = GameObject.Find(x.ToString() + "/" + y.ToString());
+            NetworkServer.Destroy(tester);
+        }
+        
     }
 
     //This seems like a poor way to do this but it works for now
@@ -148,7 +168,7 @@ public class DNDCombatUnit : NetworkBehaviour
     {
         walking = true;
         //run through each position in movementPath
-        for(int i=0; i<(movementPath.Count-1); i++)
+        for (int i=0; i<(movementPath.Count-1); i++)
         {
             //calculate start and end points for moving from one cell to the next
             var pointA = movementPath[i];
@@ -175,7 +195,8 @@ public class DNDCombatUnit : NetworkBehaviour
         walking = false;
     }
 
-    public void toggleWalk()
+    //[Command]
+    public void cmdtoggleWalk()
     {
         StartCoroutine(tester());
     }

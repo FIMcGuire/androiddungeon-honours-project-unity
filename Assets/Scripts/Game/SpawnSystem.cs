@@ -58,8 +58,8 @@ public class SpawnSystem : NetworkBehaviour
         }
 
         //instantiate player prefab at current spawnpoint location and then tie it to client connection
-        GameObject playerInstance = Instantiate(playerPrefab, spawnPoints[nextIndex].position, spawnPoints[nextIndex].rotation);
-        playerInstance.transform.parent = GameObject.Find("PlayerObjects").transform;
+        var playerInstance = Instantiate(playerPrefab, spawnPoints[nextIndex].position, spawnPoints[nextIndex].rotation);
+        playerInstance.transform.localScale = new Vector3(pathfinding.GetGrid().GetCellSize() / 5, pathfinding.GetGrid().GetCellSize() / 5, 1);
         NetworkServer.Spawn(playerInstance, conn);
 
         //increment counter
