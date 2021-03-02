@@ -36,7 +36,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 160.29999, y: 29.900024}
+  m_AnchoredPosition: {x: 166, y: 35}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1403090949311036587
@@ -242,7 +242,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8114234906785886566}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 12997dd3ae38558448c66cd7d6efadf2, type: 3}
   m_Name: 
@@ -250,6 +250,7 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0.1
   testPrefab: {fileID: 3343386816617543467, guid: a429163812e0ff644ab72da601a3c40a, type: 3}
+  pathPrefab: {fileID: 3343386816617543467, guid: 0af95b72a581ca448a4dc9a158e7b1e3, type: 3}
 --- !u!114 &7975688705422100746
 MonoBehaviour:
   m_ObjectHideFlags: 0

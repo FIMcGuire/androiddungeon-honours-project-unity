@@ -2,8 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Utils
+public abstract class Utils
 {
+    public static void DrawLine(Vector3 start, Vector3 end)
+    {
+        Debug.DrawLine(start, end);
+    }
+
     public static Vector3 GetMouseWorldPosition()
     {
         Vector3 vec = GetMouseWorldPositionWithZ(Input.mousePosition, Camera.main);

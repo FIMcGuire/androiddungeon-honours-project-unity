@@ -6,9 +6,13 @@ using Mirror;
 public class DNDCombatUnit : NetworkBehaviour
 {
     [SerializeField] private GameObject testPrefab = null;
+    [SerializeField] private GameObject pathPrefab = null;
 
     //List of Vector3 objects to move playercharacter
     List<Vector3> movementPath = new List<Vector3>();
+
+    //Movement Speed
+    [SerializeField] private int movementSpeed = 5;
 
     //Pathfinding grid
     private Pathfinding pathfinding = Pathfinding.Instance;
@@ -26,6 +30,13 @@ public class DNDCombatUnit : NetworkBehaviour
 
         //Code to move player game objects to 0,0 on Grid FIND A BETTER WAY SO THAT TWO OBJECTS CANNOT OCCUPY SAME SPACE
         //transform.position = new Vector3(0, 0) * pathfinding.GetGrid().GetCellSize() + Vector3.one * pathfinding.GetGrid().GetCellSize() * .5f;
+    }
+
+    public override void OnStartAuthority()
+    {
+        enabled = true;
+
+        base.OnStartAuthority();
     }
 
     //Runs every frame
@@ -59,7 +70,7 @@ public class DNDCombatUnit : NetworkBehaviour
             }*/
 
             //if middle mouse click, add nearby cell to list of movement
-            if (Input.GetMouseButtonDown(2) && !walking)
+            if (Input.GetMouseButtonDown(2) && !walking && movementSpeed > 0)
             {
                 //Get the coordinates of the mouse and the dwarf
                 Vector3 mouseWorldPosition = Utils.GetMouseWorldPosition();
@@ -99,18 +110,14 @@ public class DNDCombatUnit : NetworkBehaviour
                         //add the given movement to the list of Vector3 objects
                         Debug.Log("Okay!");
                         Vector3 cellPos = new Vector3(x, y) * pathfinding.GetGrid().GetCellSize() + Vector3.one * pathfinding.GetGrid().GetCellSize() * .5f;
-                        cellPos.z = 0;
+                        cellPos.z = 1;
                         movementPath.Add(cellPos);
+
+                        cmdCreatePath(cellPos);
+                        movementSpeed--;
                     }
                 }
-            }
-
-            //Put movement UI on camera-tied prefab
-            if (Input.GetKeyDown(KeyCode.J))
-            {
-                cmdtoggleWalk();
-            }
-            
+            }           
             
             if (Input.GetMouseButtonDown(1) && isServer)
             {
@@ -130,6 +137,25 @@ public class DNDCombatUnit : NetworkBehaviour
 
             }
             */
+        }
+    }
+
+    [Command]
+    void cmdCreatePath(Vector3 cellPos)
+    {
+        GameObject path = Instantiate(pathPrefab, cellPos, Quaternion.identity);
+        path.tag = "Path";
+        path.transform.localScale = new Vector3(pathfinding.GetGrid().GetCellSize(), pathfinding.GetGrid().GetCellSize(), 0);
+        NetworkServer.Spawn(path, connectionToClient);
+    }
+
+    [Command]
+    void cmdDestroyPath()
+    {
+        GameObject[] pathObjects = GameObject.FindGameObjectsWithTag("Path");
+        for (int i = 0; i < pathObjects.Length; i++)
+        {
+            NetworkServer.Destroy(pathObjects[i]);
         }
     }
 
@@ -193,9 +219,10 @@ public class DNDCombatUnit : NetworkBehaviour
 
         movementPath.Clear();
         walking = false;
+        movementSpeed = 5;
+        cmdDestroyPath();
     }
 
-    //[Command]
     public void cmdtoggleWalk()
     {
         StartCoroutine(tester());
