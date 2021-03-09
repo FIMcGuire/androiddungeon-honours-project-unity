@@ -12,14 +12,12 @@ public class DNDCombatUnit : NetworkBehaviour
     List<Vector3> movementPath = new List<Vector3>();
 
     //Movement Speed
-    [SerializeField] private int movementSpeed = 5;
+    [SerializeField] public int movementSpeed = 5;
 
     //Pathfinding grid
     private Pathfinding pathfinding = Pathfinding.Instance;
 
     private bool walking = false;
-
-    List<GameObject> quadList = new List<GameObject>();
 
     public void Start()
     {

@@ -21,6 +21,9 @@ public class GameHandler_DND : NetworkBehaviour
     {
         pathfinding = new Pathfinding(mapWidth, mapHeight);
         List<NetworkGamePlayerDND> test = networkMan.GetComponent<NetworkManagerDND>().GamePlayers;
-        Debug.Log(test[0].ToString());
+        foreach (var player in test)
+        {
+            Debug.Log(player.GetDisplayName());
+        }     
     }
 }

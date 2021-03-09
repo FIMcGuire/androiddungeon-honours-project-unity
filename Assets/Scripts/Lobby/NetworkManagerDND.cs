@@ -29,6 +29,13 @@ public class NetworkManagerDND : NetworkManager
     public List<NetworkRoomPlayerDND> RoomPlayers { get; } = new List<NetworkRoomPlayerDND>();
     public List<NetworkGamePlayerDND> GamePlayers { get; } = new List<NetworkGamePlayerDND>();
 
+    public List<List<string>> PlayerStats = new List<List<string>>();
+
+    public void SetPlayerStats(List<string> stats)
+    {
+        PlayerStats.Add(stats);
+    }
+
     public override void OnStartServer() => spawnPrefabs = Resources.LoadAll<GameObject>("SpawnablePrefabs").ToList();
 
     public override void OnStartClient()
@@ -146,7 +153,6 @@ public class NetworkManagerDND : NetworkManager
 
     public override void ServerChangeScene(string newSceneName)
     {
-        Debug.Log("Here!");
         //from menu to game
         if (SceneManager.GetActiveScene().path == menuScene && newSceneName.StartsWith("Scene_DND"))
         {
@@ -154,7 +160,7 @@ public class NetworkManagerDND : NetworkManager
             {
                 var conn = RoomPlayers[i].connectionToClient;
                 var gamePlayerInstance = Instantiate(gamePlayerPrefab);
-                gamePlayerInstance.SetDisplayName(RoomPlayers[i].DisplayName);
+                gamePlayerInstance.SetPlayerName(RoomPlayers[i].DisplayName);
 
                 NetworkServer.Destroy(conn.identity.gameObject);
 

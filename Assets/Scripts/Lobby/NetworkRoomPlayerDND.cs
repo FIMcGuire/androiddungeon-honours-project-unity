@@ -15,6 +15,7 @@ public class NetworkRoomPlayerDND : NetworkBehaviour
 
     [SyncVar(hook = nameof(HandleDisplayNameChanged))]
     public string DisplayName = "Loading...";
+    
     [SyncVar(hook = nameof(HandleReadyStatusChanged))]
     public bool IsReady = false;
 
@@ -41,6 +42,12 @@ public class NetworkRoomPlayerDND : NetworkBehaviour
     public override void OnStartAuthority()
     {
         CmdSetDisplayName(PlayerNameInput.DisplayName);
+
+        List<string> stats = new List<string>() { PlayerStatInput.StrengthStat.ToString(), PlayerStatInput.DexterityStat.ToString(), PlayerStatInput.ConstitutionStat.ToString(),
+            PlayerStatInput.WisdomStat.ToString(), PlayerStatInput.IntelligenceStat.ToString(), PlayerStatInput.CharismaStat.ToString(), PlayerCurrentStatInput.HealthStat,
+            PlayerCurrentStatInput.ArmorClassStat, PlayerCurrentStatInput.SpeedStat};
+
+        Room.SetPlayerStats(stats);
 
         lobbyUI.SetActive(true);
     }
@@ -103,7 +110,7 @@ public class NetworkRoomPlayerDND : NetworkBehaviour
     [Command]
     private void CmdSetDisplayName(string displayName)
     {
-        DisplayName = displayName;
+        DisplayName = displayName; 
     }
 
     [Command]
@@ -117,6 +124,7 @@ public class NetworkRoomPlayerDND : NetworkBehaviour
     [Command]
     public void CmdStartGame()
     {
+        //If this instance is not the first player in RoomPlayers (lobby leader/host) then return
         if (Room.RoomPlayers[0].connectionToClient != connectionToClient) { return; }
 
         Room.StartGame();

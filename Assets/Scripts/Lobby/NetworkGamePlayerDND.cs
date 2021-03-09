@@ -35,10 +35,13 @@ public class NetworkGamePlayerDND : NetworkBehaviour
     }
 
     [Server]
-    public void SetDisplayName(string displayName)
+    public void SetPlayerName(string displayName)
     {
         this.displayName = displayName;
     }
 
-
+    public string GetDisplayName()
+    {
+        return displayName;
+    }    
 }
