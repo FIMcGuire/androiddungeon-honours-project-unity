@@ -4,12 +4,17 @@ using UnityEngine.UI;
 
 public class JoinLobbyMenu : MonoBehaviour
 {
-    [SerializeField] private NetworkManagerDND networkManager = null;
+    private NetworkManagerDND networkManager;
 
     [Header("UI")]
     [SerializeField] private GameObject landingPagePanel = null;
     [SerializeField] private TMP_InputField ipAddressInputField = null;
     [SerializeField] private Button joinButton = null;
+
+    private void Start()
+    {
+        networkManager = GameObject.Find("NetworkManager").GetComponent<NetworkManagerDND>();
+    }
 
     private void OnEnable()
     {

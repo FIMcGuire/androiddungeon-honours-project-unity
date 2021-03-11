@@ -4,10 +4,15 @@ using UnityEngine;
 
 public class MainMenu : MonoBehaviour
 {
-    [SerializeField] private NetworkManagerDND networkManager = null;
+    private NetworkManagerDND networkManager;
 
     [Header("UI")]
     [SerializeField] private GameObject landingPagePanel = null;
+
+    private void Start()
+    {
+        networkManager = GameObject.Find("NetworkManager").GetComponent<NetworkManagerDND>();
+    }
 
     public void HostLobby()
     {

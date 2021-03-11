@@ -107,6 +107,8 @@ public class NetworkRoomPlayerDND : NetworkBehaviour
         startGameButton.interactable = readyToStart;
     }
 
+    #region SERVER
+
     [Command]
     private void CmdSetDisplayName(string displayName)
     {
@@ -129,4 +131,5 @@ public class NetworkRoomPlayerDND : NetworkBehaviour
 
         Room.StartGame();
     }
+    #endregion
 }
