@@ -13,11 +13,28 @@ public class NetworkRoomPlayerDND : NetworkBehaviour
     [SerializeField] private TMP_Text[] playerReadyTexts = new TMP_Text[4];
     [SerializeField] private Button startGameButton = null;
 
+    Pathfinding pathfinding;
+
     [SyncVar(hook = nameof(HandleDisplayNameChanged))]
     public string DisplayName = "Loading...";
     
     [SyncVar(hook = nameof(HandleReadyStatusChanged))]
     public bool IsReady = false;
+
+    [Header("MapSelection")]
+    [SerializeField] private TMP_InputField mapWidth = null;
+    [SerializeField] private TMP_InputField mapHeight = null;
+    [SerializeField] private Image mapPreview = null;
+    [SerializeField] private Sprite castleMap = null;
+    [SerializeField] private Sprite forestMap = null;
+    [SerializeField] private TextMeshProUGUI mapTitle = null;
+
+    [SyncVar(hook = nameof(HandleMapChanged))]
+    public int mapCounter = 0;
+    [SyncVar(hook = nameof(HandleWidthChanged))]
+    public int width;
+    [SyncVar(hook = nameof(HandleHeightChanged))]
+    public int height;
 
     private bool isLeader;
     public bool IsLeader
@@ -26,6 +43,10 @@ public class NetworkRoomPlayerDND : NetworkBehaviour
         {
             isLeader = value;
             startGameButton.gameObject.SetActive(value);
+        }
+        get
+        {
+            return isLeader;
         }
     }
 
@@ -68,6 +89,31 @@ public class NetworkRoomPlayerDND : NetworkBehaviour
 
     public void HandleReadyStatusChanged(bool oldValue, bool newValue) => UpdateDisplay();
     public void HandleDisplayNameChanged(string oldValue, string newValue) => UpdateDisplay();
+    public void HandleWidthChanged(int oldValue, int newValue)
+    {
+        Debug.Log(DisplayName + " VALUE CHANGED");
+        foreach (var player in Room.RoomPlayers)
+        {
+            player.width = newValue;
+        }
+    }
+
+    public void HandleHeightChanged(int oldValue, int newValue)
+    {
+        Debug.Log(DisplayName + " VALUE CHANGED");
+        foreach (var player in Room.RoomPlayers)
+        {
+            player.height = newValue;
+        }
+    }
+    public void HandleMapChanged(int oldValue, int newValue)
+    {
+        Debug.Log(DisplayName + " VALUE CHANGED");
+        foreach (var player in Room.RoomPlayers)
+        {
+            player.mapCounter = newValue;
+        }
+    }
 
     private void UpdateDisplay()
     {
@@ -107,7 +153,45 @@ public class NetworkRoomPlayerDND : NetworkBehaviour
         startGameButton.interactable = readyToStart;
     }
 
+    public void mapCycle()
+    {
+        if (mapCounter == 0)
+        {
+            mapPreview.sprite = castleMap;
+            mapTitle.SetText("Castle");
+            mapCounter = 1;
+        }
+        else
+        {
+            mapPreview.sprite = forestMap;
+            mapTitle.SetText("Forest");
+            mapCounter = 0;
+        }
+    }
+
     #region SERVER
+
+    [Command]
+    public void CmdCreateGrid()
+    {
+        if (!isLeader) { return; }
+
+        //int width = int.Parse(mapWidth.text);
+        //int height = int.Parse(mapHeight.text);
+
+        if (mapCounter == 0)
+        {
+            width = 26;
+            height = 27;
+        }
+        else
+        {
+            width = 22;
+            height = 26;
+        }
+
+        //Room.mapCounter = this.mapCounter;
+    }
 
     [Command]
     private void CmdSetDisplayName(string displayName)

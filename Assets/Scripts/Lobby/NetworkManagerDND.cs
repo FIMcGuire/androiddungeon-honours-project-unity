@@ -106,6 +106,7 @@ public class NetworkManagerDND : NetworkManager
             else if (player is NetworkGamePlayerDND gamePlayer)
             {
                 GamePlayers.Remove(gamePlayer);
+                StopHost();
             }
         }
 
@@ -161,6 +162,7 @@ public class NetworkManagerDND : NetworkManager
                 var conn = RoomPlayers[i].connectionToClient;
                 var gamePlayerInstance = Instantiate(gamePlayerPrefab);
                 gamePlayerInstance.SetPlayerName(RoomPlayers[i].DisplayName);
+                gamePlayerInstance.SetValues(RoomPlayers[i].width, RoomPlayers[i].height, RoomPlayers[i].mapCounter);
 
                 NetworkServer.Destroy(conn.identity.gameObject);
 

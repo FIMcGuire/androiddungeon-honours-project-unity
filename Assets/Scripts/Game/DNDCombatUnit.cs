@@ -2,26 +2,32 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
+using UnityEngine.SceneManagement;
 
 public class DNDCombatUnit : NetworkBehaviour
 {
     [SerializeField] private GameObject testPrefab = null;
     [SerializeField] private GameObject pathPrefab = null;
+    private FieldOfView fieldOfView;
 
     //List of Vector3 objects to move playercharacter
     List<Vector3> movementPath = new List<Vector3>();
 
     //Movement Speed
     [SerializeField] public int movementSpeed = 5;
+    public int maxSpeed;
 
     //Pathfinding grid
     private Pathfinding pathfinding = Pathfinding.Instance;
+
+    //NetworkManager
+    private NetworkManagerDND networkManager;
 
     private bool walking = false;
 
     public void Start()
     {
-        transform.parent = GameObject.Find("PlayerObjects").transform;
+        networkManager = GameObject.Find("NetworkManager").GetComponent<NetworkManagerDND>();
 
         //Code to ensure scale of player game objects match scale of Grid
         //transform.localScale = new Vector3(pathfinding.GetGrid().GetCellSize() / 5, pathfinding.GetGrid().GetCellSize() / 5, 1);
@@ -33,6 +39,8 @@ public class DNDCombatUnit : NetworkBehaviour
     public override void OnStartAuthority()
     {
         enabled = true;
+
+        fieldOfView = GameObject.Find("FOV").GetComponent<FieldOfView>();
 
         base.OnStartAuthority();
     }
@@ -48,6 +56,7 @@ public class DNDCombatUnit : NetworkBehaviour
     {
         if (hasAuthority)
         {
+            #region Old A*
             /*
             //if left click draw path using A* between dwarf and mouse
             if (Input.GetMouseButtonDown(0))
@@ -66,6 +75,9 @@ public class DNDCombatUnit : NetworkBehaviour
                     }
                 }
             }*/
+            #endregion
+
+            fieldOfView.SetOrigin(transform.position);
 
             //if middle mouse click, add nearby cell to list of movement
             if (Input.GetMouseButtonDown(2) && !walking && movementSpeed > 0)
@@ -108,7 +120,7 @@ public class DNDCombatUnit : NetworkBehaviour
                         //add the given movement to the list of Vector3 objects
                         Debug.Log("Okay!");
                         Vector3 cellPos = new Vector3(x, y) * pathfinding.GetGrid().GetCellSize() + Vector3.one * pathfinding.GetGrid().GetCellSize() * .5f;
-                        cellPos.z = 1;
+                        cellPos.z = -1;
                         movementPath.Add(cellPos);
 
                         cmdCreatePath(cellPos);
@@ -121,21 +133,13 @@ public class DNDCombatUnit : NetworkBehaviour
             {
                 cmdQuad();
             }
-
-            //if middle click move dwarf along path
-            //Find a less jank way to do this
-            /*
-            if (Input.GetMouseButtonDown(2) && buttonControl)
-            {
-                Vector3 mouseWorldPosition = GetMouseWorldPosition();
-                //pathfinding.GetGrid().GetXY(mouseWorldPosition, out int x, out int y);
-
-                movementPath = pathfinding.FindPath(dwarf.transform.position, mouseWorldPosition);
-                StartCoroutine(tester());
-
-            }
-            */
         }
+    }
+
+    [Command]
+    public void cmdDisconnect()
+    {
+        networkManager.OnServerDisconnect(connectionToClient);
     }
 
     [Command]
@@ -217,7 +221,8 @@ public class DNDCombatUnit : NetworkBehaviour
 
         movementPath.Clear();
         walking = false;
-        movementSpeed = 5;
+        movementSpeed = maxSpeed;
+        Debug.Log(movementSpeed + " / " + maxSpeed);
         cmdDestroyPath();
     }
 

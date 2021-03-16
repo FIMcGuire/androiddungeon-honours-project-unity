@@ -11,6 +11,15 @@ public class NetworkGamePlayerDND : NetworkBehaviour
     [SyncVar]
     private string displayName = "Loading...";
 
+    [SyncVar]
+    public int width;
+
+    [SyncVar]
+    public int height;
+
+    [SyncVar]
+    public int mapCounter;
+
     private NetworkManagerDND room;
     private NetworkManagerDND Room
     {
@@ -32,12 +41,22 @@ public class NetworkGamePlayerDND : NetworkBehaviour
     public override void OnStopClient()
     {
         Room.GamePlayers.Remove(this);
+
+        base.OnStopClient();
     }
 
     [Server]
     public void SetPlayerName(string displayName)
     {
         this.displayName = displayName;
+    }
+
+    [Server]
+    public void SetValues(int width, int height, int mapCounter)
+    {
+        this.width = width;
+        this.height = height;
+        this.mapCounter = mapCounter;
     }
 
     public string GetDisplayName()

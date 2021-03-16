@@ -41,7 +41,7 @@ public class Grid<TGridObject>
             }
         }
 
-        bool showDebug = true;
+        bool showDebug = false;
         if (showDebug)
         {
             //Array that contains text for each grid square
