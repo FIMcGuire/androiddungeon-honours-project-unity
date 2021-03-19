@@ -157,15 +157,25 @@ public class NetworkRoomPlayerDND : NetworkBehaviour
     {
         if (mapCounter == 0)
         {
+            mapCounter = 1;
+        }
+        else
+        {
+            mapCounter = 0;
+        }
+    }
+
+    private void Update()
+    {
+        if (mapCounter == 0)
+        {
             mapPreview.sprite = castleMap;
             mapTitle.SetText("Castle");
-            mapCounter = 1;
         }
         else
         {
             mapPreview.sprite = forestMap;
             mapTitle.SetText("Forest");
-            mapCounter = 0;
         }
     }
 

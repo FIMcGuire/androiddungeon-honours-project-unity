@@ -5130,6 +5130,81 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1011725386}
   m_CullTransparentMesh: 0
+--- !u!1 &1014529517
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1014529519}
+  - component: {fileID: 1014529518}
+  - component: {fileID: 1367226769}
+  m_Layer: 0
+  m_Name: NetworkManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1014529518
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1014529517}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 896e9c3ad7f9a5144aaad5331b8b7bc7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dontDestroyOnLoad: 1
+  runInBackground: 1
+  autoStartServerBuild: 1
+  showDebugMessages: 0
+  serverTickRate: 30
+  offlineScene: Assets/Scenes/MenuScene.unity
+  onlineScene: 
+  transport: {fileID: 1367226769}
+  networkAddress: localhost
+  maxConnections: 4
+  disconnectInactiveConnections: 0
+  disconnectInactiveTimeout: 60
+  authenticator: {fileID: 0}
+  playerPrefab: {fileID: 7240756161040188102, guid: 9eb70f2f32d307242bba6ca65ffb703a, type: 3}
+  autoCreatePlayer: 1
+  playerSpawnMethod: 0
+  spawnPrefabs:
+  - {fileID: 7240756161040188102, guid: 9eb70f2f32d307242bba6ca65ffb703a, type: 3}
+  - {fileID: 6618638424105462162, guid: 3ef12326c543651479dde0205e0b688c, type: 3}
+  - {fileID: 1014529517}
+  - {fileID: 6618638424105462162, guid: c99b06255e32eb34cb5df0dcfd4c5b07, type: 3}
+  - {fileID: 8114234906785886566, guid: 4237aa106e326fb41ba87919b2e1eaf9, type: 3}
+  - {fileID: 3343386816617543467, guid: a429163812e0ff644ab72da601a3c40a, type: 3}
+  - {fileID: 7680763906135578982, guid: 76abdd3ffb1d5ac43aa578e1466adbea, type: 3}
+  - {fileID: 3068856049573514615, guid: 635ca3b39fc398d4e84dc655957921ea, type: 3}
+  - {fileID: 8114234906785886566, guid: 9ef6acda87cfffe4da326ba5ae48f8d5, type: 3}
+  minPlayers: 2
+  menuScene: Assets/Scenes/MenuScene.unity
+  roomPlayerPrefab: {fileID: 5448064573662245959, guid: c99b06255e32eb34cb5df0dcfd4c5b07, type: 3}
+  gamePlayerPrefab: {fileID: 6283469160916580787, guid: 3ef12326c543651479dde0205e0b688c, type: 3}
+  playerSpawnSystem: {fileID: 3068856049573514615, guid: 635ca3b39fc398d4e84dc655957921ea, type: 3}
+--- !u!4 &1014529519
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1014529517}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -21.405659, y: 21.807264, z: -2952.15}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1034782003
 GameObject:
   m_ObjectHideFlags: 0
@@ -6984,17 +7059,50 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1367226769 stripped
+--- !u!114 &1367226769
 MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 1164236320194829748, guid: 4c4699a1ea5895547bd0035423248c9e, type: 3}
-  m_PrefabInstance: {fileID: 1164236320299981298}
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 1014529517}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6b0fecffa3f624585964b0d0eb21b18e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  OnClientConnected:
+    m_PersistentCalls:
+      m_Calls: []
+  OnClientDataReceived:
+    m_PersistentCalls:
+      m_Calls: []
+  OnClientError:
+    m_PersistentCalls:
+      m_Calls: []
+  OnClientDisconnected:
+    m_PersistentCalls:
+      m_Calls: []
+  OnServerConnected:
+    m_PersistentCalls:
+      m_Calls: []
+  OnServerDataReceived:
+    m_PersistentCalls:
+      m_Calls: []
+  OnServerError:
+    m_PersistentCalls:
+      m_Calls: []
+  OnServerDisconnected:
+    m_PersistentCalls:
+      m_Calls: []
+  Port: 7777
+  NoDelay: 1
+  Interval: 10
+  FastResend: 0
+  CongestionWindow: 0
+  SendWindowSize: 256
+  ReceiveWindowSize: 256
+  debugGUI: 0
 --- !u!1 &1379087385
 GameObject:
   m_ObjectHideFlags: 0
@@ -10657,108 +10765,3 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: -20, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!1001 &1164236320299981298
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 1164236320194829748, guid: 4c4699a1ea5895547bd0035423248c9e, type: 3}
-      propertyPath: m_Enabled
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1164236320194829748, guid: 4c4699a1ea5895547bd0035423248c9e, type: 3}
-      propertyPath: FastResend
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1164236320194829748, guid: 4c4699a1ea5895547bd0035423248c9e, type: 3}
-      propertyPath: CongestionWindow
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1164236320194829748, guid: 4c4699a1ea5895547bd0035423248c9e, type: 3}
-      propertyPath: debugGUI
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1164236320194829748, guid: 4c4699a1ea5895547bd0035423248c9e, type: 3}
-      propertyPath: SendWindowSize
-      value: 256
-      objectReference: {fileID: 0}
-    - target: {fileID: 1164236320194829748, guid: 4c4699a1ea5895547bd0035423248c9e, type: 3}
-      propertyPath: ReceiveWindowSize
-      value: 256
-      objectReference: {fileID: 0}
-    - target: {fileID: 1164236320194829749, guid: 4c4699a1ea5895547bd0035423248c9e, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: -21.405659
-      objectReference: {fileID: 0}
-    - target: {fileID: 1164236320194829749, guid: 4c4699a1ea5895547bd0035423248c9e, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 21.807264
-      objectReference: {fileID: 0}
-    - target: {fileID: 1164236320194829749, guid: 4c4699a1ea5895547bd0035423248c9e, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: -2952.15
-      objectReference: {fileID: 0}
-    - target: {fileID: 1164236320194829749, guid: 4c4699a1ea5895547bd0035423248c9e, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1164236320194829749, guid: 4c4699a1ea5895547bd0035423248c9e, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1164236320194829749, guid: 4c4699a1ea5895547bd0035423248c9e, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1164236320194829749, guid: 4c4699a1ea5895547bd0035423248c9e, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1164236320194829749, guid: 4c4699a1ea5895547bd0035423248c9e, type: 3}
-      propertyPath: m_RootOrder
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 1164236320194829749, guid: 4c4699a1ea5895547bd0035423248c9e, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1164236320194829749, guid: 4c4699a1ea5895547bd0035423248c9e, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1164236320194829749, guid: 4c4699a1ea5895547bd0035423248c9e, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1164236320194829751, guid: 4c4699a1ea5895547bd0035423248c9e, type: 3}
-      propertyPath: m_Name
-      value: NetworkManager
-      objectReference: {fileID: 0}
-    - target: {fileID: 1164236320945472946, guid: 4c4699a1ea5895547bd0035423248c9e, type: 3}
-      propertyPath: spawnPrefabs.Array.size
-      value: 9
-      objectReference: {fileID: 0}
-    - target: {fileID: 1164236320945472946, guid: 4c4699a1ea5895547bd0035423248c9e, type: 3}
-      propertyPath: networkAddress
-      value: localhost
-      objectReference: {fileID: 0}
-    - target: {fileID: 1164236320945472946, guid: 4c4699a1ea5895547bd0035423248c9e, type: 3}
-      propertyPath: dontDestroyOnLoad
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1164236320945472946, guid: 4c4699a1ea5895547bd0035423248c9e, type: 3}
-      propertyPath: spawnPrefabs.Array.data[8]
-      value: 
-      objectReference: {fileID: 8114234906785886566, guid: 9ef6acda87cfffe4da326ba5ae48f8d5, type: 3}
-    - target: {fileID: 1164236320945472946, guid: 4c4699a1ea5895547bd0035423248c9e, type: 3}
-      propertyPath: transport
-      value: 
-      objectReference: {fileID: 1367226769}
-    - target: {fileID: 1164236320945472946, guid: 4c4699a1ea5895547bd0035423248c9e, type: 3}
-      propertyPath: offlineScene
-      value: Assets/Scenes/MenuScene.unity
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 4c4699a1ea5895547bd0035423248c9e, type: 3}

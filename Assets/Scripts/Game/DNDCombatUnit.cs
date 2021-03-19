@@ -13,6 +13,9 @@ public class DNDCombatUnit : NetworkBehaviour
     //List of Vector3 objects to move playercharacter
     List<Vector3> movementPath = new List<Vector3>();
 
+    //List of GameObjects to remove player Path
+    List<GameObject> movementPathGameObjects = new List<GameObject>();
+
     //Movement Speed
     [SerializeField] public int movementSpeed = 5;
     public int maxSpeed;
@@ -149,16 +152,19 @@ public class DNDCombatUnit : NetworkBehaviour
         path.tag = "Path";
         path.transform.localScale = new Vector3(pathfinding.GetGrid().GetCellSize(), pathfinding.GetGrid().GetCellSize(), 0);
         NetworkServer.Spawn(path, connectionToClient);
+        movementPathGameObjects.Add(path);
     }
 
     [Command]
     void cmdDestroyPath()
     {
-        GameObject[] pathObjects = GameObject.FindGameObjectsWithTag("Path");
-        for (int i = 0; i < pathObjects.Length; i++)
+        if (movementPathGameObjects.Count > 0)
         {
-            NetworkServer.Destroy(pathObjects[i]);
-        }
+            foreach (var pathObject in movementPathGameObjects)
+            {
+                NetworkServer.Destroy(pathObject);
+            }
+        }   
     }
 
     [Command]
@@ -166,28 +172,29 @@ public class DNDCombatUnit : NetworkBehaviour
     {
         Vector3 mouseWorldPosition = Utils.GetMouseWorldPosition();
         pathfinding.GetGrid().GetXY(mouseWorldPosition, out int x, out int y);
-
-        if (pathfinding.GetNode(x, y).isWalkable)
-        {
-            pathfinding.GetNode(x, y).SetIsWalkable(false);
-
-            Vector3 cellPos = new Vector3(x, y) * pathfinding.GetGrid().GetCellSize() + Vector3.one * pathfinding.GetGrid().GetCellSize() * .5f;
-            cellPos.z = 0;
-
-            GameObject tester = Instantiate(testPrefab, cellPos, Quaternion.identity);
-            tester.name = x.ToString() + "/" + y.ToString();
-            //quadList.Add(tester);
-            tester.transform.localScale = new Vector3(pathfinding.GetGrid().GetCellSize(), pathfinding.GetGrid().GetCellSize(), 1);
-            NetworkServer.Spawn(tester);
-        }
-        else
-        {
-            Debug.Log("here");
-            pathfinding.GetNode(x, y).SetIsWalkable(true);
-            GameObject tester = GameObject.Find(x.ToString() + "/" + y.ToString());
-            NetworkServer.Destroy(tester);
-        }
         
+        if (x >= 0 && y >= 0)
+        {
+            if (pathfinding.GetNode(x, y).isWalkable)
+            {
+                pathfinding.GetNode(x, y).SetIsWalkable(false);
+
+                Vector3 cellPos = new Vector3(x, y) * pathfinding.GetGrid().GetCellSize() + Vector3.one * pathfinding.GetGrid().GetCellSize() * .5f;
+                cellPos.z = 0;
+
+                GameObject tester = Instantiate(testPrefab, cellPos, Quaternion.identity);
+                tester.name = x.ToString() + "/" + y.ToString();
+                //quadList.Add(tester);
+                tester.transform.localScale = new Vector3(pathfinding.GetGrid().GetCellSize(), pathfinding.GetGrid().GetCellSize(), 1);
+                NetworkServer.Spawn(tester);
+            }
+            else
+            {
+                pathfinding.GetNode(x, y).SetIsWalkable(true);
+                GameObject tester = GameObject.Find(x.ToString() + "/" + y.ToString());
+                NetworkServer.Destroy(tester);
+            }
+        }
     }
 
     //This seems like a poor way to do this but it works for now
@@ -228,6 +235,9 @@ public class DNDCombatUnit : NetworkBehaviour
 
     public void cmdtoggleWalk()
     {
-        StartCoroutine(tester());
+        if (movementPath.Count > 0)
+        {
+            StartCoroutine(tester());
+        }
     }
 }
