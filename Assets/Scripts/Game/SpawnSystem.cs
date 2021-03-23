@@ -6,7 +6,9 @@ using Mirror;
 public class SpawnSystem : NetworkBehaviour
 {
     //gameobjects to hold player and spawnpoint prefabs
+    [SerializeField] private GameObject hostPrefab = null;
     [SerializeField] private GameObject playerPrefab = null;
+    [SerializeField] private GameObject monsterPrefab = null;
     [SerializeField] private GameObject spawnPoint = null;
 
     //list of coords for spawnpoints
@@ -17,6 +19,9 @@ public class SpawnSystem : NetworkBehaviour
 
     //instance of pathfinding
     Pathfinding pathfinding = Pathfinding.Instance;
+
+    //instance of NetworkManagerDND
+    private NetworkManagerDND networkManager = NetworkManager.singleton as NetworkManagerDND;
 
     //method called from PlayerSpawnPoint adds coords to list
     public static void AddSpawnPoint(Transform transform)
@@ -57,12 +62,42 @@ public class SpawnSystem : NetworkBehaviour
             return;
         }
 
-        //instantiate player prefab at current spawnpoint location and then tie it to client connection
-        var playerInstance = Instantiate(playerPrefab, spawnPoints[nextIndex].position, spawnPoints[nextIndex].rotation);
-        playerInstance.transform.localScale = new Vector3(pathfinding.GetGrid().GetCellSize() / 5, pathfinding.GetGrid().GetCellSize() / 5, 1);
-        NetworkServer.Spawn(playerInstance, conn);
+        //Determine who the host is, and create HOST game object not player object
+        NetworkGamePlayerDND player = null;
+        foreach (var gamer in networkManager.GamePlayers)
+        {
+            if (gamer.IsLeader)
+            {
+                player = gamer;
+                break;
+            }
+        }
 
-        //increment counter
-        nextIndex++;
+        if (conn == player.connectionToClient)
+        {
+            //instantiate host prefab at 0,0,0 and then tie it to the host's client connection
+            var playerInstance = Instantiate(hostPrefab, Vector3.zero, Quaternion.identity);
+            NetworkServer.Spawn(playerInstance, conn);
+        }
+        else
+        {
+            //instantiate player prefab at current spawnpoint location and then tie it to client connection
+            var playerInstance = Instantiate(playerPrefab, spawnPoints[nextIndex].position, spawnPoints[nextIndex].rotation);
+            playerInstance.transform.localScale = new Vector3(pathfinding.GetGrid().GetCellSize() / 5, pathfinding.GetGrid().GetCellSize() / 5, 1);
+            NetworkServer.Spawn(playerInstance, conn);
+
+            //increment counter
+            nextIndex++;
+        }
+    }
+
+    [Server]
+    public void SpawnMonster(NetworkConnection conn, Vector3 location, Vector3 size, Sprite monsterType)
+    {
+        //instantiate player prefab at current spawnpoint location and then tie it to client connection
+        var monsterInstance = Instantiate(monsterPrefab, location, Quaternion.identity);
+        monsterInstance.GetComponent<SpriteRenderer>().sprite = monsterType;
+        monsterInstance.transform.localScale = size;
+        NetworkServer.Spawn(monsterInstance, conn);
     }
 }

@@ -5,6 +5,7 @@ using Mirror;
 
 public class FieldOfView : NetworkBehaviour
 {
+    [SerializeField] private LayerMask layerMask;
     private Mesh mesh;
     private Vector3 origin;
     private Pathfinding pathfinding;
@@ -19,6 +20,7 @@ public class FieldOfView : NetworkBehaviour
 
     private void LateUpdate()
     {
+        mesh.RecalculateBounds();
         float fov = 360;
         int rayCount = 100;
         float angle = 0f;
@@ -36,7 +38,7 @@ public class FieldOfView : NetworkBehaviour
         for (int i = 0; i <= rayCount; i++)
         {
             Vector3 vertex;
-            RaycastHit2D raycastHit2D = Physics2D.Raycast(origin, Utils.GetVectorFromAngle(angle), viewDistance);
+            RaycastHit2D raycastHit2D = Physics2D.Raycast(origin, Utils.GetVectorFromAngle(angle), viewDistance, layerMask);
             if (raycastHit2D.collider == null)
             {
                 //No hit

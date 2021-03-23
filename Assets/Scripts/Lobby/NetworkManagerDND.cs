@@ -19,7 +19,7 @@ public class NetworkManagerDND : NetworkManager
     //prefab for game client object
     [Header("Game")]
     [SerializeField] private NetworkGamePlayerDND gamePlayerPrefab = null;
-    [SerializeField] private GameObject playerSpawnSystem = null;
+    [SerializeField] public GameObject playerSpawnSystem = null;
 
     public static event Action OnClientConnected;
     public static event Action OnClientDisconnected;
@@ -106,6 +106,7 @@ public class NetworkManagerDND : NetworkManager
             else if (player is NetworkGamePlayerDND gamePlayer)
             {
                 GamePlayers.Remove(gamePlayer);
+                StopClient();
                 StopHost();
             }
         }
@@ -163,6 +164,7 @@ public class NetworkManagerDND : NetworkManager
                 var gamePlayerInstance = Instantiate(gamePlayerPrefab);
                 gamePlayerInstance.SetPlayerName(RoomPlayers[i].DisplayName);
                 gamePlayerInstance.SetValues(RoomPlayers[i].width, RoomPlayers[i].height, RoomPlayers[i].mapCounter);
+                gamePlayerInstance.IsLeader = RoomPlayers[i].IsLeader;
 
                 NetworkServer.Destroy(conn.identity.gameObject);
 

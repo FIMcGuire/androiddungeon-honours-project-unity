@@ -83,7 +83,7 @@ public class DNDCombatUnit : NetworkBehaviour
             fieldOfView.SetOrigin(transform.position);
 
             //if middle mouse click, add nearby cell to list of movement
-            if (Input.GetMouseButtonDown(2) && !walking && movementSpeed > 0)
+            if (Input.GetMouseButtonDown(0) && !walking && movementSpeed > 0)
             {
                 //Get the coordinates of the mouse and the dwarf
                 Vector3 mouseWorldPosition = Utils.GetMouseWorldPosition();
@@ -91,6 +91,8 @@ public class DNDCombatUnit : NetworkBehaviour
                 test.GetXY(mouseWorldPosition, out int x, out int y);
                 //pathfinding.GetGrid().GetXY(mouseWorldPosition, out int x, out int y);
                 pathfinding.GetGrid().GetXY(transform.position, out int originX, out int originY);
+
+                Debug.Log(pathfinding.GetNode(x, y).isWalkable);
 
                 //if movementPath list contains any Vector3's, get Pathnode object from latest position in the list. Else, get Pathnode object from origin position of dwarf.
                 PathNode cell;
@@ -121,7 +123,6 @@ public class DNDCombatUnit : NetworkBehaviour
                     if ((node.x == movement.x && node.y == movement.y) && node.isWalkable)
                     {
                         //add the given movement to the list of Vector3 objects
-                        Debug.Log("Okay!");
                         Vector3 cellPos = new Vector3(x, y) * pathfinding.GetGrid().GetCellSize() + Vector3.one * pathfinding.GetGrid().GetCellSize() * .5f;
                         cellPos.z = -1;
                         movementPath.Add(cellPos);
@@ -131,11 +132,6 @@ public class DNDCombatUnit : NetworkBehaviour
                     }
                 }
             }           
-            
-            if (Input.GetMouseButtonDown(1) && isServer)
-            {
-                cmdQuad();
-            }
         }
     }
 
@@ -165,36 +161,6 @@ public class DNDCombatUnit : NetworkBehaviour
                 NetworkServer.Destroy(pathObject);
             }
         }   
-    }
-
-    [Command]
-    void cmdQuad()
-    {
-        Vector3 mouseWorldPosition = Utils.GetMouseWorldPosition();
-        pathfinding.GetGrid().GetXY(mouseWorldPosition, out int x, out int y);
-        
-        if (x >= 0 && y >= 0)
-        {
-            if (pathfinding.GetNode(x, y).isWalkable)
-            {
-                pathfinding.GetNode(x, y).SetIsWalkable(false);
-
-                Vector3 cellPos = new Vector3(x, y) * pathfinding.GetGrid().GetCellSize() + Vector3.one * pathfinding.GetGrid().GetCellSize() * .5f;
-                cellPos.z = 0;
-
-                GameObject tester = Instantiate(testPrefab, cellPos, Quaternion.identity);
-                tester.name = x.ToString() + "/" + y.ToString();
-                //quadList.Add(tester);
-                tester.transform.localScale = new Vector3(pathfinding.GetGrid().GetCellSize(), pathfinding.GetGrid().GetCellSize(), 1);
-                NetworkServer.Spawn(tester);
-            }
-            else
-            {
-                pathfinding.GetNode(x, y).SetIsWalkable(true);
-                GameObject tester = GameObject.Find(x.ToString() + "/" + y.ToString());
-                NetworkServer.Destroy(tester);
-            }
-        }
     }
 
     //This seems like a poor way to do this but it works for now
@@ -229,7 +195,6 @@ public class DNDCombatUnit : NetworkBehaviour
         movementPath.Clear();
         walking = false;
         movementSpeed = maxSpeed;
-        Debug.Log(movementSpeed + " / " + maxSpeed);
         cmdDestroyPath();
     }
 

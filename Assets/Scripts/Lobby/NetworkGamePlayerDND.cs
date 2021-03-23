@@ -20,6 +20,19 @@ public class NetworkGamePlayerDND : NetworkBehaviour
     [SyncVar]
     public int mapCounter;
 
+    private bool isLeader;
+    public bool IsLeader
+    {
+        set
+        {
+            isLeader = value;
+        }
+        get
+        {
+            return isLeader;
+        }
+    }
+
     private NetworkManagerDND room;
     private NetworkManagerDND Room
     {

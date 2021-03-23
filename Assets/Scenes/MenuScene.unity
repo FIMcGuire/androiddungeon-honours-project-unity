@@ -5183,6 +5183,8 @@ MonoBehaviour:
   - {fileID: 6618638424105462162, guid: c99b06255e32eb34cb5df0dcfd4c5b07, type: 3}
   - {fileID: 8114234906785886566, guid: 4237aa106e326fb41ba87919b2e1eaf9, type: 3}
   - {fileID: 3343386816617543467, guid: a429163812e0ff644ab72da601a3c40a, type: 3}
+  - {fileID: 3343386816617543467, guid: 0af95b72a581ca448a4dc9a158e7b1e3, type: 3}
+  - {fileID: 3343386816617543467, guid: 1534799a6b5c1a7409bfca3aa6422dd4, type: 3}
   - {fileID: 7680763906135578982, guid: 76abdd3ffb1d5ac43aa578e1466adbea, type: 3}
   - {fileID: 3068856049573514615, guid: 635ca3b39fc398d4e84dc655957921ea, type: 3}
   - {fileID: 8114234906785886566, guid: 9ef6acda87cfffe4da326ba5ae48f8d5, type: 3}

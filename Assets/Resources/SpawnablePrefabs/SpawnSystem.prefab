@@ -62,6 +62,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   syncMode: 0
   syncInterval: 0.1
+  hostPrefab: {fileID: 358006944570845880, guid: b09b4635f7fc5f541b3d84257885d9cf, type: 3}
   playerPrefab: {fileID: 8114234906785886566, guid: 4237aa106e326fb41ba87919b2e1eaf9, type: 3}
+  monsterPrefab: {fileID: 8114234906785886566, guid: 9ef6acda87cfffe4da326ba5ae48f8d5, type: 3}
   spawnPoint: {fileID: 7680763906135578982, guid: 76abdd3ffb1d5ac43aa578e1466adbea, type: 3}
-  quadPrefab: {fileID: 0}

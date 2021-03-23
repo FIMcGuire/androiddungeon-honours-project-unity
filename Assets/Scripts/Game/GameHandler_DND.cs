@@ -18,15 +18,12 @@ public class GameHandler_DND : NetworkBehaviour
     private void Start()
     {
         networkMan = NetworkManager.singleton as NetworkManagerDND;
+        pathfinding = new Pathfinding(networkMan.GamePlayers[0].width, networkMan.GamePlayers[0].height);
         cmdCreateGrid();
     }
-
-    //Make the image change on all clients
-    //[Command]
     
     void cmdCreateGrid()
     {
-        pathfinding = new Pathfinding(networkMan.GamePlayers[0].width, networkMan.GamePlayers[0].height);
         backgroundImage.transform.localScale = new Vector3(pathfinding.GetGrid().GetWidth() / 2f, pathfinding.GetGrid().GetHeight() / 2f);
 
         if (networkMan.GamePlayers[0].mapCounter == 0)
