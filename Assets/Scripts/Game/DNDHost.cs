@@ -11,11 +11,11 @@ public class DNDHost : NetworkBehaviour
     [SerializeField] private GameObject roughPrefab = null;
     [SerializeField] private GameObject pathPrefab = null;
     [SerializeField] private GameObject monsterPrefab = null;
-    private List<Transform> monsterButtons = null;
+    [SerializeField] private List<Sprite> monsterSprites = null;
 
     private Transform HostCanvasObject;
     private Sprite monsterSprite = null;
-    private bool monsterSelected = false;
+    private string monsterName = null;
 
     private GameObject selectedMonster = null;
 
@@ -62,6 +62,7 @@ public class DNDHost : NetworkBehaviour
         enabled = true;
 
         GameObject.Find("FOV").SetActive(false);
+        GameObject.Find("BlackCanvas").SetActive(false);
 
         HostCanvasObject = this.transform.Find("Canvas");
 
@@ -84,7 +85,29 @@ public class DNDHost : NetworkBehaviour
             cmdDestroyPath();
             movementSpeed = maxSpeed;
         }
-        monsterSprite = button.GetComponent<Image>().sprite;
+        monsterName = button.name;
+        Debug.Log(button.name);
+        switch (monsterName)
+        {
+            case "Goblin":
+                monsterSprite = monsterSprites[0];
+                break;
+            case "Bugbear":
+                monsterSprite = monsterSprites[1];
+                break;
+            case "Bandit":
+                monsterSprite = monsterSprites[2];
+                break;
+            case "Bandit2":
+                monsterSprite = monsterSprites[3];
+                break;
+            case "Wolf":
+                monsterSprite = monsterSprites[4];
+                break;
+            case "Mimic":
+                monsterSprite = monsterSprites[5];
+                break;
+        }
         state = Mode.Spawn;
     }
 
@@ -215,9 +238,10 @@ public class DNDHost : NetworkBehaviour
             //instantiate player prefab at current spawnpoint location and then tie it to client connection
             var monsterInstance = Instantiate(monsterPrefab, cellPos, Quaternion.identity);
             monsterInstance.GetComponent<SpriteRenderer>().sprite = monsterSprite;
-            monsterInstance.name = monsterInstance.GetComponent<SpriteRenderer>().sprite.ToString() + " " + x.ToString() + "/" + y.ToString();
+            monsterInstance.name = monsterName + " " + x.ToString() + "/" + y.ToString();
             monsterInstance.transform.localScale = new Vector3(pathfinding.GetGrid().GetCellSize() / 5, pathfinding.GetGrid().GetCellSize() / 5, 1);
             NetworkServer.Spawn(monsterInstance, connectionToClient);
+            monsterInstance.layer = 9;
         }
     }
 
@@ -302,7 +326,6 @@ public class DNDHost : NetworkBehaviour
             }
             else
             {
-                pathfinding.GetNode(x, y).SetIsWalkable(true);
                 GameObject tester = GameObject.Find("Rough: " + x.ToString() + "/" + y.ToString());
                 NetworkServer.Destroy(tester);
             }

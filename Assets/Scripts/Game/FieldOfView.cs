@@ -22,10 +22,10 @@ public class FieldOfView : NetworkBehaviour
     {
         mesh.RecalculateBounds();
         float fov = 360;
-        int rayCount = 100;
+        int rayCount = 360;
         float angle = 0f;
         float angleIncrease = fov / rayCount;
-        float viewDistance = pathfinding.GetGrid().GetCellSize() * 30f;
+        float viewDistance = pathfinding.GetGrid().GetCellSize() * 12f;
 
         Vector3[] vertices = new Vector3[rayCount + 1 + 1];
         Vector2[] uv = new Vector2[vertices.Length];

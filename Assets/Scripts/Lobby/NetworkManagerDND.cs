@@ -12,6 +12,8 @@ public class NetworkManagerDND : NetworkManager
     //scene for the menuScene (i.e. scene game starts on)
     [Scene] [SerializeField] private string menuScene = string.Empty;
 
+    Pathfinding pathfinding;
+
     //prefab for lobby client object
     [Header("Room")]
     [SerializeField] private NetworkRoomPlayerDND roomPlayerPrefab = null;
@@ -171,7 +173,6 @@ public class NetworkManagerDND : NetworkManager
                 NetworkServer.ReplacePlayerForConnection(conn, gamePlayerInstance.gameObject, true);
             }
         }
-
         base.ServerChangeScene(newSceneName);
     }
 

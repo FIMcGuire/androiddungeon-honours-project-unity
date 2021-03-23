@@ -4,7 +4,7 @@ using UnityEngine;
 using Mirror;
 using UnityEngine.UI;
 
-public class GameHandler_DND : NetworkBehaviour
+public class GameHandler_DND : MonoBehaviour
 {
     [SerializeField] private int mapWidth;
     [SerializeField] private int mapHeight;
@@ -21,7 +21,7 @@ public class GameHandler_DND : NetworkBehaviour
         pathfinding = new Pathfinding(networkMan.GamePlayers[0].width, networkMan.GamePlayers[0].height);
         cmdCreateGrid();
     }
-    
+
     void cmdCreateGrid()
     {
         backgroundImage.transform.localScale = new Vector3(pathfinding.GetGrid().GetWidth() / 2f, pathfinding.GetGrid().GetHeight() / 2f);

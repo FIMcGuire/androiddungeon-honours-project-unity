@@ -92,8 +92,6 @@ public class DNDCombatUnit : NetworkBehaviour
                 //pathfinding.GetGrid().GetXY(mouseWorldPosition, out int x, out int y);
                 pathfinding.GetGrid().GetXY(transform.position, out int originX, out int originY);
 
-                Debug.Log(pathfinding.GetNode(x, y).isWalkable);
-
                 //if movementPath list contains any Vector3's, get Pathnode object from latest position in the list. Else, get Pathnode object from origin position of dwarf.
                 PathNode cell;
                 if (movementPath.Count > 0)
