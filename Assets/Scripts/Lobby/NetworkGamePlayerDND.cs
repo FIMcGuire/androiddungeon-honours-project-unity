@@ -12,6 +12,12 @@ public class NetworkGamePlayerDND : NetworkBehaviour
     private string displayName = "Loading...";
 
     [SyncVar]
+    public List<string> playerStats;
+
+    [SyncVar]
+    public string icon;
+
+    [SyncVar]
     public int width;
 
     [SyncVar]
@@ -72,8 +78,20 @@ public class NetworkGamePlayerDND : NetworkBehaviour
         this.mapCounter = mapCounter;
     }
 
+    [Server]
+    public void SetStats(List<string> stats)
+    {
+        playerStats = stats;
+    }
+
+    [Server]
+    public void SetIcon(string icon)
+    {
+        this.icon = icon;
+    }
+
     public string GetDisplayName()
     {
         return displayName;
-    }    
+    }
 }

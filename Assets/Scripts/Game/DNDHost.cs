@@ -59,8 +59,6 @@ public class DNDHost : NetworkBehaviour
 
     public override void OnStartAuthority()
     {
-        enabled = true;
-
         GameObject.Find("FOV").SetActive(false);
         GameObject.Find("BlackCanvas").SetActive(false);
 
@@ -79,46 +77,52 @@ public class DNDHost : NetworkBehaviour
 
     public void SpawnButton(GameObject button)
     {
-        if (movementPath != null)
+        if (state == Mode.Idle)
         {
-            movementPath.Clear();
-            cmdDestroyPath();
-            movementSpeed = maxSpeed;
-        }
-        monsterName = button.name;
-        Debug.Log(button.name);
-        switch (monsterName)
-        {
-            case "Goblin":
-                monsterSprite = monsterSprites[0];
-                break;
-            case "Bugbear":
-                monsterSprite = monsterSprites[1];
-                break;
-            case "Bandit":
-                monsterSprite = monsterSprites[2];
-                break;
-            case "Bandit2":
-                monsterSprite = monsterSprites[3];
-                break;
-            case "Wolf":
-                monsterSprite = monsterSprites[4];
-                break;
-            case "Mimic":
-                monsterSprite = monsterSprites[5];
-                break;
-        }
-        state = Mode.Spawn;
+            if (movementPath != null)
+            {
+                movementPath.Clear();
+                cmdDestroyPath();
+                movementSpeed = maxSpeed;
+            }
+            monsterName = button.name;
+            Debug.Log(button.name);
+            switch (monsterName)
+            {
+                case "Goblin":
+                    monsterSprite = monsterSprites[0];
+                    break;
+                case "Bugbear":
+                    monsterSprite = monsterSprites[1];
+                    break;
+                case "Bandit":
+                    monsterSprite = monsterSprites[2];
+                    break;
+                case "Bandit2":
+                    monsterSprite = monsterSprites[3];
+                    break;
+                case "Wolf":
+                    monsterSprite = monsterSprites[4];
+                    break;
+                case "Mimic":
+                    monsterSprite = monsterSprites[5];
+                    break;
+            }
+            state = Mode.Spawn;
+        }   
     }
 
     public void ToggleWalls()
     {
         if (state != Mode.Walls)
         {
+            HostCanvasObject.Find("Button_Panel").Find("WallsButton").GetComponent<Image>().color = Color.green;
+            HostCanvasObject.Find("Button_Panel").Find("RoughButton").GetComponent<Image>().color = Color.white;
             state = Mode.Walls;
         }
         else
         {
+            HostCanvasObject.Find("Button_Panel").Find("WallsButton").GetComponent<Image>().color = Color.white;
             state = Mode.Idle;
         }
     }
@@ -127,10 +131,13 @@ public class DNDHost : NetworkBehaviour
     {
         if (state != Mode.RoughTerrain)
         {
+            HostCanvasObject.Find("Button_Panel").Find("WallsButton").GetComponent<Image>().color = Color.white;
+            HostCanvasObject.Find("Button_Panel").Find("RoughButton").GetComponent<Image>().color = Color.green;
             state = Mode.RoughTerrain;
         }
         else
         {
+            HostCanvasObject.Find("Button_Panel").Find("RoughButton").GetComponent<Image>().color = Color.white;
             state = Mode.Idle;
         }
     }
@@ -139,7 +146,7 @@ public class DNDHost : NetworkBehaviour
     void HandleHostControls()
     {
         if (hasAuthority)
-        {
+        { 
             if (Input.GetMouseButtonDown(0) && state == Mode.Walls && isServer)
             {
                 cmdQuad();
@@ -157,7 +164,12 @@ public class DNDHost : NetworkBehaviour
                 if (hit)
                 {
                     if (hit.transform.gameObject.GetComponent<NetworkIdentity>().connectionToClient != connectionToClient) { return; }
+
+                    if (selectedMonster != null)
+                        selectedMonster.GetComponent<SpriteRenderer>().color = Color.white;
+
                     selectedMonster = hit.transform.gameObject;
+                    selectedMonster.GetComponent<SpriteRenderer>().color = Color.green;
                     state = Mode.Movement;
                     if (movementPath != null)
                     {
@@ -211,7 +223,14 @@ public class DNDHost : NetworkBehaviour
                         movementPath.Add(cellPos);
 
                         cmdCreatePath(cellPos);
-                        movementSpeed--;
+                        if (node.isRoughTerrain)
+                        {
+                            movementSpeed-=2;
+                        }
+                        else
+                        {
+                            movementSpeed--;
+                        }
                     }
                 }
             }
@@ -222,6 +241,14 @@ public class DNDHost : NetworkBehaviour
                 state = Mode.Idle;
             }
         }
+    }
+
+    #region SERVER
+
+    [Command]
+    public void cmdDisconnect()
+    {
+        networkManager.OnServerDisconnect(connectionToClient);
     }
 
     [Command]
@@ -242,13 +269,37 @@ public class DNDHost : NetworkBehaviour
             monsterInstance.transform.localScale = new Vector3(pathfinding.GetGrid().GetCellSize() / 5, pathfinding.GetGrid().GetCellSize() / 5, 1);
             NetworkServer.Spawn(monsterInstance, connectionToClient);
             monsterInstance.layer = 9;
+
+            RpcUpdateMonster(monsterInstance, monsterName, x.ToString() + "/" + y.ToString());
         }
     }
 
-    [Command]
-    public void cmdDisconnect()
+    [ClientRpc]
+    void RpcUpdateMonster(GameObject monster, string monsterName, string position)
     {
-        networkManager.OnServerDisconnect(connectionToClient);
+        switch (monsterName)
+        {
+            case "Goblin":
+                monsterSprite = monsterSprites[0];
+                break;
+            case "Bugbear":
+                monsterSprite = monsterSprites[1];
+                break;
+            case "Bandit":
+                monsterSprite = monsterSprites[2];
+                break;
+            case "Bandit2":
+                monsterSprite = monsterSprites[3];
+                break;
+            case "Wolf":
+                monsterSprite = monsterSprites[4];
+                break;
+            case "Mimic":
+                monsterSprite = monsterSprites[5];
+                break;
+        }
+        monster.name = monsterName + " " + position;
+        monster.GetComponent<SpriteRenderer>().sprite = monsterSprite;
     }
 
     [Command]
@@ -281,7 +332,7 @@ public class DNDHost : NetworkBehaviour
 
         if (x >= 0 && y >= 0)
         {
-            if (pathfinding.GetNode(x, y).isWalkable)
+            if (pathfinding.GetNode(x, y).isWalkable && !pathfinding.GetNode(x, y).isRoughTerrain)
             {
                 //Not working across clients, spawning but not toggling
                 pathfinding.GetNode(x, y).SetIsWalkable(false);
@@ -293,13 +344,28 @@ public class DNDHost : NetworkBehaviour
                 //quadList.Add(tester);
                 tester.transform.localScale = new Vector3(pathfinding.GetGrid().GetCellSize(), pathfinding.GetGrid().GetCellSize(), 1);
                 NetworkServer.Spawn(tester);
+                RpcQuad(x, y, false);
             }
             else
             {
                 pathfinding.GetNode(x, y).SetIsWalkable(true);
                 GameObject tester = GameObject.Find("Wall: " + x.ToString() + "/" + y.ToString());
                 NetworkServer.Destroy(tester);
+                RpcQuad(x, y, true);
             }
+        }
+    }
+
+    [ClientRpc]
+    void RpcQuad(int x, int y, bool createDestroy)
+    {
+        if (!createDestroy)
+        {
+            pathfinding.GetNode(x, y).SetIsWalkable(false);
+        }
+        else
+        {
+            pathfinding.GetNode(x, y).SetIsWalkable(true);
         }
     }
 
@@ -311,10 +377,10 @@ public class DNDHost : NetworkBehaviour
 
         if (x >= 0 && y >= 0)
         {
-            if (pathfinding.GetNode(x, y).isWalkable)
+            if (pathfinding.GetNode(x, y).isWalkable && !pathfinding.GetNode(x, y).isRoughTerrain)
             {
                 //Not working across clients, spawning but not toggling
-                pathfinding.GetNode(x, y).SetIsWalkable(false);
+                pathfinding.GetNode(x, y).SetIsRoughTerrain(true);
                 Vector3 cellPos = new Vector3(x, y) * pathfinding.GetGrid().GetCellSize() + Vector3.one * pathfinding.GetGrid().GetCellSize() * .5f;
                 cellPos.z = 0;
 
@@ -323,14 +389,32 @@ public class DNDHost : NetworkBehaviour
                 //quadList.Add(tester);
                 tester.transform.localScale = new Vector3(pathfinding.GetGrid().GetCellSize(), pathfinding.GetGrid().GetCellSize(), 1);
                 NetworkServer.Spawn(tester);
+                RpcRoughTerrain(x,y,true);
             }
             else
             {
+                pathfinding.GetNode(x, y).SetIsRoughTerrain(false);
                 GameObject tester = GameObject.Find("Rough: " + x.ToString() + "/" + y.ToString());
                 NetworkServer.Destroy(tester);
+                RpcRoughTerrain(x, y, false);
             }
         }
     }
+
+    [ClientRpc]
+    void RpcRoughTerrain(int x, int y, bool createDestroy)
+    {
+        if (!createDestroy)
+        {
+            pathfinding.GetNode(x, y).SetIsRoughTerrain(false);
+        }
+        else
+        {
+            pathfinding.GetNode(x, y).SetIsRoughTerrain(true);
+        }
+    }
+
+    #endregion
 
     //This seems like a poor way to do this but it works for now
     //loops through a list of Vector3s and moves the dwarf between them every .5f, then clears the list
@@ -365,7 +449,8 @@ public class DNDHost : NetworkBehaviour
         walking = false;
         movementSpeed = maxSpeed;
         cmdDestroyPath();
-        Debug.Log(walking + movementSpeed.ToString() + "/" + maxSpeed.ToString());
+        selectedMonster.GetComponent<SpriteRenderer>().color = Color.white;
+        state = Mode.Idle;
     }
 
     public void cmdtoggleWalk()
@@ -373,7 +458,6 @@ public class DNDHost : NetworkBehaviour
         if (movementPath.Count > 0)
         {
             StartCoroutine(tester());
-            state = Mode.Idle;
         }
     }
 }

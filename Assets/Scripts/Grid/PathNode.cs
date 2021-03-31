@@ -14,6 +14,7 @@ public class PathNode
     public int fCost;
 
     public bool isWalkable;
+    public bool isRoughTerrain;
     public PathNode cameFromNode;
 
     public PathNode(Grid<PathNode> grid, int x, int y)
@@ -27,6 +28,12 @@ public class PathNode
     public void SetIsWalkable(bool isWalkable)
     {
         this.isWalkable = isWalkable;
+        grid.TriggerGridObjectChanged(x, y);
+    }
+
+    public void SetIsRoughTerrain(bool isRoughTerrain)
+    {
+        this.isRoughTerrain = isRoughTerrain;
         grid.TriggerGridObjectChanged(x, y);
     }
 

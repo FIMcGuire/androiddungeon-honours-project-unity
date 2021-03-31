@@ -66,3 +66,9 @@ MonoBehaviour:
   playerPrefab: {fileID: 8114234906785886566, guid: 4237aa106e326fb41ba87919b2e1eaf9, type: 3}
   monsterPrefab: {fileID: 8114234906785886566, guid: 9ef6acda87cfffe4da326ba5ae48f8d5, type: 3}
   spawnPoint: {fileID: 7680763906135578982, guid: 76abdd3ffb1d5ac43aa578e1466adbea, type: 3}
+  allSprites:
+  - {fileID: 21300000, guid: 13f579d514f52844095543ae0ad65a16, type: 3}
+  - {fileID: 21300000, guid: 7e49181c15ea4d84f94e8471f76852f6, type: 3}
+  - {fileID: 21300000, guid: 0c8130f5f6dc1164a9e4264c3a92ea45, type: 3}
+  - {fileID: 21300000, guid: e00a417035402894382be757c4b55ac6, type: 3}
+  - {fileID: 21300000, guid: a8695dc32157e8a47902ac04954bc635, type: 3}

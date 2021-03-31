@@ -126,7 +126,14 @@ public class DNDCombatUnit : NetworkBehaviour
                         movementPath.Add(cellPos);
 
                         cmdCreatePath(cellPos);
-                        movementSpeed--;
+                        if (node.isRoughTerrain)
+                        {
+                            movementSpeed -= 2;
+                        }
+                        else
+                        {
+                            movementSpeed--;
+                        }
                     }
                 }
             }           

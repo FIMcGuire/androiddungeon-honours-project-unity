@@ -36,6 +36,13 @@ public class NetworkRoomPlayerDND : NetworkBehaviour
     [SyncVar(hook = nameof(HandleHeightChanged))]
     public int height;
 
+    //Stats & Sprites
+    [SyncVar]
+    public string playerSprite;
+    public List<List<string>> allPlayerStats;
+    [SyncVar]
+    public List<string> playerStats;
+
     private bool isLeader;
     public bool IsLeader
     {
@@ -68,7 +75,9 @@ public class NetworkRoomPlayerDND : NetworkBehaviour
             PlayerStatInput.WisdomStat.ToString(), PlayerStatInput.IntelligenceStat.ToString(), PlayerStatInput.CharismaStat.ToString(), PlayerCurrentStatInput.HealthStat,
             PlayerCurrentStatInput.ArmorClassStat, PlayerCurrentStatInput.SpeedStat};
 
-        Room.SetPlayerStats(stats);
+        string icon = PlayerStatInput.Icon;
+
+        CmdSetStatsAndIcon(stats, icon);
 
         lobbyUI.SetActive(true);
     }
@@ -112,6 +121,30 @@ public class NetworkRoomPlayerDND : NetworkBehaviour
         foreach (var player in Room.RoomPlayers)
         {
             player.mapCounter = newValue;
+        }
+    }
+
+    public void HandleStatsChanged(List<string> oldValue, List<string> newValue) => UpdateStats();
+
+    private void UpdateStats()
+    {
+        if (!hasAuthority)
+        {
+            foreach (var player in Room.RoomPlayers)
+            {
+                if (player.hasAuthority)
+                {
+                    player.UpdateStats();
+                    break;
+                }
+            }
+
+            return;
+        }
+
+        for (int i = 0; i < Room.RoomPlayers.Count; i++)
+        {
+            allPlayerStats.Add(Room.RoomPlayers[i].playerStats);
         }
     }
 
@@ -207,6 +240,13 @@ public class NetworkRoomPlayerDND : NetworkBehaviour
     private void CmdSetDisplayName(string displayName)
     {
         DisplayName = displayName; 
+    }
+
+    [Command]
+    private void CmdSetStatsAndIcon(List<string> stats, string icon)
+    {
+        playerStats = stats;
+        playerSprite = icon;
     }
 
     [Command]

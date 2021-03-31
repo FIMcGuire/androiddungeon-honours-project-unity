@@ -12,6 +12,8 @@ public class NetworkManagerDND : NetworkManager
     //scene for the menuScene (i.e. scene game starts on)
     [Scene] [SerializeField] private string menuScene = string.Empty;
 
+    GameObject spawnSystem;
+
     Pathfinding pathfinding;
 
     //prefab for lobby client object
@@ -30,13 +32,6 @@ public class NetworkManagerDND : NetworkManager
 
     public List<NetworkRoomPlayerDND> RoomPlayers { get; } = new List<NetworkRoomPlayerDND>();
     public List<NetworkGamePlayerDND> GamePlayers { get; } = new List<NetworkGamePlayerDND>();
-
-    public List<List<string>> PlayerStats = new List<List<string>>();
-
-    public void SetPlayerStats(List<string> stats)
-    {
-        PlayerStats.Add(stats);
-    }
 
     public override void OnStartServer() => spawnPrefabs = Resources.LoadAll<GameObject>("SpawnablePrefabs").ToList();
 
@@ -93,6 +88,7 @@ public class NetworkManagerDND : NetworkManager
         }
     }
 
+    //Method called on Quit, disconnects all players
     public override void OnServerDisconnect(NetworkConnection conn)
     {
         if (conn.identity != null)
@@ -108,7 +104,6 @@ public class NetworkManagerDND : NetworkManager
             else if (player is NetworkGamePlayerDND gamePlayer)
             {
                 GamePlayers.Remove(gamePlayer);
-                StopClient();
                 StopHost();
             }
         }
@@ -165,6 +160,8 @@ public class NetworkManagerDND : NetworkManager
                 var conn = RoomPlayers[i].connectionToClient;
                 var gamePlayerInstance = Instantiate(gamePlayerPrefab);
                 gamePlayerInstance.SetPlayerName(RoomPlayers[i].DisplayName);
+                gamePlayerInstance.SetStats(RoomPlayers[i].playerStats);
+                gamePlayerInstance.SetIcon(RoomPlayers[i].playerSprite);
                 gamePlayerInstance.SetValues(RoomPlayers[i].width, RoomPlayers[i].height, RoomPlayers[i].mapCounter);
                 gamePlayerInstance.IsLeader = RoomPlayers[i].IsLeader;
 
@@ -181,6 +178,7 @@ public class NetworkManagerDND : NetworkManager
         if (sceneName.StartsWith("Scene_DND"))
         {
             GameObject playerSpawnSystemInstance = Instantiate(playerSpawnSystem);
+            spawnSystem = playerSpawnSystemInstance;
 
             NetworkServer.Spawn(playerSpawnSystemInstance);
         }

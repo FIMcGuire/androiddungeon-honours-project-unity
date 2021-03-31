@@ -11,11 +11,13 @@ public class SpawnSystem : NetworkBehaviour
     [SerializeField] private GameObject monsterPrefab = null;
     [SerializeField] private GameObject spawnPoint = null;
 
+    [SerializeField] private List<Sprite> allSprites = null;
+
     //list of coords for spawnpoints
     private static List<Transform> spawnPoints = new List<Transform>();
 
     //simple counter to increment as each player connects
-    private int nextIndex = 0;
+    public int nextIndex = 0;
 
     //instance of pathfinding
     Pathfinding pathfinding = Pathfinding.Instance;
@@ -54,6 +56,7 @@ public class SpawnSystem : NetworkBehaviour
 
         //coords of current spawnPoint (from nextIndex counter)
         Transform listSpawnPoint = spawnPoints.ElementAtOrDefault(nextIndex);
+        Debug.Log("index: " + nextIndex);
 
         //if null ERROR
         if(listSpawnPoint == null)
@@ -83,21 +86,50 @@ public class SpawnSystem : NetworkBehaviour
         {
             //instantiate player prefab at current spawnpoint location and then tie it to client connection
             var playerInstance = Instantiate(playerPrefab, spawnPoints[nextIndex].position, spawnPoints[nextIndex].rotation);
+
+            foreach(var gamer in networkManager.GamePlayers)
+            {
+                if (conn == gamer.connectionToClient)
+                {
+                    foreach (var sprite in allSprites)
+                    {
+                        if (gamer.icon == sprite.name)
+                        {
+                            playerInstance.GetComponent<SpriteRenderer>().sprite = sprite;
+                            break;
+                        }
+                    }      
+                }
+            }
+            
             playerInstance.transform.localScale = new Vector3(pathfinding.GetGrid().GetCellSize() / 5, pathfinding.GetGrid().GetCellSize() / 5, 1);
             NetworkServer.Spawn(playerInstance, conn);
+            RpcUpdatePlayer(playerInstance, playerInstance.GetComponent<SpriteRenderer>().sprite.name);
 
             //increment counter
             nextIndex++;
         }
     }
 
+    [ClientRpc]
+    void RpcUpdatePlayer(GameObject player, string spriteName)
+    {
+        foreach (var sprite in allSprites)
+        {
+            if (spriteName == sprite.name)
+            {
+                player.GetComponent<SpriteRenderer>().sprite = sprite;
+            }
+        }
+    }
+
     [Server]
-    public void SpawnMonster(NetworkConnection conn, Vector3 location, Vector3 size, Sprite monsterType)
+    public void SpawnMonster(NetworkConnection conn, Vector3 location, Sprite monsterType)
     {
         //instantiate player prefab at current spawnpoint location and then tie it to client connection
         var monsterInstance = Instantiate(monsterPrefab, location, Quaternion.identity);
         monsterInstance.GetComponent<SpriteRenderer>().sprite = monsterType;
-        monsterInstance.transform.localScale = size;
+        monsterInstance.transform.localScale = new Vector3(pathfinding.GetGrid().GetCellSize() / 5, pathfinding.GetGrid().GetCellSize() / 5, 1);
         NetworkServer.Spawn(monsterInstance, conn);
     }
 }

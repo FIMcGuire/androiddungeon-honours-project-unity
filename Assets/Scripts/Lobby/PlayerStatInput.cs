@@ -27,6 +27,8 @@ public class PlayerStatInput : MonoBehaviour
     public static float CharismaStat { get; private set; }
     private const string PlayerPrefsCHAKey = "CHA";
 
+    public static string Icon { get; private set; }
+
     private void Start() => SetUpInputField();
 
     private void SetUpInputField()
@@ -74,5 +76,10 @@ public class PlayerStatInput : MonoBehaviour
         PlayerPrefs.SetFloat(PlayerPrefsWISKey, WisdomStat);
         PlayerPrefs.SetFloat(PlayerPrefsINTKey, IntelligenceStat);
         PlayerPrefs.SetFloat(PlayerPrefsCHAKey, CharismaStat);
+    }
+
+    public void SetIcon(GameObject icon)
+    {
+        Icon = icon.name;
     }
 }
