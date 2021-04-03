@@ -10,6 +10,7 @@ public class PlayerCurrentStatInput : MonoBehaviour
     [SerializeField] private TMP_InputField Health = null;
     [SerializeField] private TMP_InputField ArmorClass = null;
     [SerializeField] private TMP_InputField Speed = null;
+    [SerializeField] private TMP_InputField Initiative = null;
     [SerializeField] private Button continueButton = null;
 
     public static string HealthStat { get; private set; }
@@ -18,6 +19,8 @@ public class PlayerCurrentStatInput : MonoBehaviour
     private const string PlayerPrefsArmorClassKey = "ArmorClass";
     public static string SpeedStat { get; private set; }
     private const string PlayerPrefsSpeedKey = "Speed";
+    public static string InitStat { get; private set; }
+    private const string PlayerPrefsInitKey = "Init";
 
     private void Start() => SetUpInputField();
 
@@ -40,18 +43,20 @@ public class PlayerCurrentStatInput : MonoBehaviour
         string defaultHealth = PlayerPrefs.GetString(PlayerPrefsHealthKey);
         string defaultArmorClass = PlayerPrefs.GetString(PlayerPrefsArmorClassKey);
         string defaultSpeed = PlayerPrefs.GetString(PlayerPrefsSpeedKey);
+        string defaultInit = PlayerPrefs.GetString(PlayerPrefsInitKey);
 
         Health.text = defaultHealth;
         ArmorClass.text = defaultArmorClass;
         Speed.text = defaultSpeed;
+        Initiative.text = defaultInit;
 
-        string[] values = { defaultHealth, defaultArmorClass, defaultSpeed };
+        string[] values = { defaultHealth, defaultArmorClass, defaultSpeed, defaultInit };
         int counter = 0;
         foreach (Transform text in this.gameObject.transform)
         {
             text.GetChild(0).GetChild(1).GetComponent<TextMeshProUGUI>().SetText(values[counter].ToString());
             counter++;
-            if (counter == 3) { return; }
+            if (counter == 4) { return; }
         }
     }
 
@@ -60,9 +65,11 @@ public class PlayerCurrentStatInput : MonoBehaviour
         HealthStat = Health.text;
         ArmorClassStat = ArmorClass.text;
         SpeedStat = Speed.text;
+        InitStat = Initiative.text;
 
         PlayerPrefs.SetString(PlayerPrefsHealthKey, HealthStat);
         PlayerPrefs.SetString(PlayerPrefsArmorClassKey, ArmorClassStat);
         PlayerPrefs.SetString(PlayerPrefsSpeedKey, SpeedStat);
+        PlayerPrefs.SetString(PlayerPrefsInitKey, InitStat);
     }
 }

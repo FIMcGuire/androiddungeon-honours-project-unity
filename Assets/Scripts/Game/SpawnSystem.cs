@@ -80,6 +80,7 @@ public class SpawnSystem : NetworkBehaviour
         {
             //instantiate host prefab at 0,0,0 and then tie it to the host's client connection
             var playerInstance = Instantiate(hostPrefab, Vector3.zero, Quaternion.identity);
+            playerInstance.name = "Host";
             NetworkServer.Spawn(playerInstance, conn);
         }
         else
@@ -87,10 +88,12 @@ public class SpawnSystem : NetworkBehaviour
             //instantiate player prefab at current spawnpoint location and then tie it to client connection
             var playerInstance = Instantiate(playerPrefab, spawnPoints[nextIndex].position, spawnPoints[nextIndex].rotation);
 
+            string playerName = null;
             foreach(var gamer in networkManager.GamePlayers)
             {
                 if (conn == gamer.connectionToClient)
                 {
+                    playerName = gamer.GetDisplayName();
                     foreach (var sprite in allSprites)
                     {
                         if (gamer.icon == sprite.name)
@@ -104,7 +107,8 @@ public class SpawnSystem : NetworkBehaviour
             
             playerInstance.transform.localScale = new Vector3(pathfinding.GetGrid().GetCellSize() / 5, pathfinding.GetGrid().GetCellSize() / 5, 1);
             NetworkServer.Spawn(playerInstance, conn);
-            RpcUpdatePlayer(playerInstance, playerInstance.GetComponent<SpriteRenderer>().sprite.name);
+
+            RpcUpdatePlayer(playerInstance, playerInstance.GetComponent<SpriteRenderer>().sprite.name, playerName);
 
             //increment counter
             nextIndex++;
@@ -112,8 +116,9 @@ public class SpawnSystem : NetworkBehaviour
     }
 
     [ClientRpc]
-    void RpcUpdatePlayer(GameObject player, string spriteName)
+    void RpcUpdatePlayer(GameObject player, string spriteName, string playerName)
     {
+        player.name = playerName;
         foreach (var sprite in allSprites)
         {
             if (spriteName == sprite.name)

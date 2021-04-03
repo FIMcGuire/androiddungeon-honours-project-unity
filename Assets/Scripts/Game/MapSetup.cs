@@ -4,7 +4,7 @@ using UnityEngine;
 using Mirror;
 using UnityEngine.UI;
 
-public class GameHandler_DND : MonoBehaviour
+public class MapSetup : MonoBehaviour
 {
     [SerializeField] private int mapWidth;
     [SerializeField] private int mapHeight;

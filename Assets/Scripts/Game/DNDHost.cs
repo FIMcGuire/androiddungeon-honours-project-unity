@@ -2,41 +2,56 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using TMPro;
 
 public class DNDHost : NetworkBehaviour
 {
+    //Prefabs the host can spawn, including Walls, Rough Terrain, paths, and monsters (as well as a list of monster sprites)
     [SerializeField] private GameObject quadPrefab = null;
     [SerializeField] private GameObject roughPrefab = null;
     [SerializeField] private GameObject pathPrefab = null;
     [SerializeField] private GameObject monsterPrefab = null;
-    [SerializeField] private List<Sprite> monsterSprites = null;
+    [SerializeField] private GameObject initNamePrefab = null;
 
+    [SerializeField] private TMP_InputField monsterInitInput = null;
+
+    //Sprite handlers
+    [SerializeField] private List<Sprite> monsterSprites = null;
     private Transform HostCanvasObject;
     private Sprite monsterSprite = null;
     private string monsterName = null;
+    private int monsterInitiative = 0;
+    [SyncVar]
+    private int monsterCounter = 0;
 
+    //Gameobject to hold current selected monster
     private GameObject selectedMonster = null;
 
-    //List of Vector3 objects to move playercharacter
+    //List of Vector3 positions to move monsters
     List<Vector3> movementPath = new List<Vector3>();
-
-    //List of GameObjects to remove player Path
+    //List of path objects
     List<GameObject> movementPathGameObjects = new List<GameObject>();
 
-    //Movement Speed
+    //List of gameobjects for turn-order/initiative
+    //[SyncVar]
+    public List<GameObject> initiativeObjects = new List<GameObject>();
+
+    [SyncVar]
+    List<Initiative> initiatives = new List<Initiative>();
+
+    //Movement
     [SerializeField] public int movementSpeed = 5;
     public int maxSpeed = 5;
-
-    //Pathfinding grid
-    private Pathfinding pathfinding = Pathfinding.Instance;
-
-    //NetworkManager
-    private NetworkManagerDND networkManager = NetworkManager.singleton as NetworkManagerDND;
-
     private bool walking = false;
 
+    //Pathfinding instance
+    private Pathfinding pathfinding = Pathfinding.Instance;
+
+    //NetworkManager instance
+    private NetworkManagerDND networkManager = NetworkManager.singleton as NetworkManagerDND; 
+
+    //State machine
     private enum Mode
     {
         Walls,
@@ -45,7 +60,6 @@ public class DNDHost : NetworkBehaviour
         Movement,
         Idle
     }
-
     private Mode state = Mode.Idle;
 
     public void Start()
@@ -59,11 +73,12 @@ public class DNDHost : NetworkBehaviour
 
     public override void OnStartAuthority()
     {
+        //Disable objects that block view of map
         GameObject.Find("FOV").SetActive(false);
         GameObject.Find("BlackCanvas").SetActive(false);
 
+        //Find and enable Host UI (better way of doing this but not in this 'game')
         HostCanvasObject = this.transform.Find("Canvas");
-
         HostCanvasObject.gameObject.SetActive(true);
 
         base.OnStartAuthority();
@@ -75,10 +90,12 @@ public class DNDHost : NetworkBehaviour
         HandleHostControls();
     }
 
-    public void SpawnButton(GameObject button)
+    //Method to determine which monster was selected
+    public void onMonsterButtonPressed(GameObject button)
     {
         if (state == Mode.Idle)
         {
+            //if previous monster had movementpath, delete it (will be defunct if turn order implemented correctly)
             if (movementPath != null)
             {
                 movementPath.Clear();
@@ -86,7 +103,6 @@ public class DNDHost : NetworkBehaviour
                 movementSpeed = maxSpeed;
             }
             monsterName = button.name;
-            Debug.Log(button.name);
             switch (monsterName)
             {
                 case "Goblin":
@@ -108,10 +124,17 @@ public class DNDHost : NetworkBehaviour
                     monsterSprite = monsterSprites[5];
                     break;
             }
-            state = Mode.Spawn;
-        }   
+        }
     }
 
+    //Method to set monster initiative
+    public void SetInitAndSpawn()
+    {
+        monsterInitiative = int.Parse(monsterInitInput.text);
+        state = Mode.Spawn;
+    }
+
+    //Method to toggle wall mode
     public void ToggleWalls()
     {
         if (state != Mode.Walls)
@@ -127,6 +150,7 @@ public class DNDHost : NetworkBehaviour
         }
     }
 
+    //Method to toggle rough-terrain mode
     public void ToggleRoughTerrain()
     {
         if (state != Mode.RoughTerrain)
@@ -142,21 +166,25 @@ public class DNDHost : NetworkBehaviour
         }
     }
 
+    //Method to determine inputs
     [Client]
     void HandleHostControls()
     {
         if (hasAuthority)
         { 
+            //Create a wall if in Wall mode
             if (Input.GetMouseButtonDown(0) && state == Mode.Walls && isServer)
             {
                 cmdQuad();
             }
 
+            //Create a rough-terrain if in rough-terrain mode
             if (Input.GetMouseButtonDown(0) && state == Mode.RoughTerrain && isServer)
             {
                 cmdRoughTerrain();
             }
 
+            //Select a monster using raycast2D
             if (Input.GetMouseButtonDown(0) && isServer && !walking)
             {
                 var hit = Physics2D.Raycast(new Vector2(Camera.main.ScreenToWorldPoint(Input.mousePosition).x, Camera.main.ScreenToWorldPoint(Input.mousePosition).y), Vector2.zero, 0f);
@@ -180,6 +208,7 @@ public class DNDHost : NetworkBehaviour
                 }
             }
 
+            //create a movement path for a selected monster
             if (Input.GetMouseButtonDown(0) && state == Mode.Movement && selectedMonster != null && !walking && movementSpeed > 0)
             {
                 //Get the coordinates of the mouse and the dwarf
@@ -201,7 +230,7 @@ public class DNDHost : NetworkBehaviour
                 {
                     cell = pathfinding.GetGrid().GetGridObject(originX, originY);
                     Vector3 originCell = new Vector3(originX, originY) * pathfinding.GetGrid().GetCellSize() + Vector3.one * pathfinding.GetGrid().GetCellSize() * .5f;
-                    originCell.z = 0;
+                    originCell.z = -1;
                     movementPath.Add(originCell);
                 }
 
@@ -235,6 +264,7 @@ public class DNDHost : NetworkBehaviour
                 }
             }
 
+            //Create a monster if in spawn mode
             if (Input.GetMouseButtonDown(0) && state == Mode.Spawn)
             {
                 cmdSpawnNPC();
@@ -245,12 +275,43 @@ public class DNDHost : NetworkBehaviour
 
     #region SERVER
 
+    //Method to add gameobject and initiative to list and UI element
+    [Command]
+    public void CmdAddToInitList(GameObject obj, int initValue)
+    {
+        initiatives.Add(new Initiative(obj, initValue));
+        var parent = HostCanvasObject.Find("Initiative_Panel").GetChild(0).GetChild(0);
+        GameObject test = Instantiate(initNamePrefab);
+        test.name = obj.name;
+        test.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = obj.name;
+        test.transform.parent = parent;
+        test.transform.localScale = new Vector3(1, 1, 0);
+        monsterCounter++;
+        monsterInitiative = 0;
+        initiatives.Sort();
+
+        int counter = 0;
+        foreach (Initiative item in initiatives)
+        {
+            foreach (Transform initObject in HostCanvasObject.Find("Initiative_Panel").GetChild(0).GetChild(0))
+            {
+                if (item.obj.name == initObject.name)
+                {
+                    initObject.SetSiblingIndex(counter);
+                }
+            }
+            counter++;
+        }
+    }
+
+    //Method to disconnect from server
     [Command]
     public void cmdDisconnect()
     {
         networkManager.OnServerDisconnect(connectionToClient);
     }
 
+    //Method to spawn a monster
     [Command]
     private void cmdSpawnNPC()
     {
@@ -265,18 +326,22 @@ public class DNDHost : NetworkBehaviour
             //instantiate player prefab at current spawnpoint location and then tie it to client connection
             var monsterInstance = Instantiate(monsterPrefab, cellPos, Quaternion.identity);
             monsterInstance.GetComponent<SpriteRenderer>().sprite = monsterSprite;
-            monsterInstance.name = monsterName + " " + x.ToString() + "/" + y.ToString();
+            monsterInstance.name = monsterName + "/" + monsterCounter;
             monsterInstance.transform.localScale = new Vector3(pathfinding.GetGrid().GetCellSize() / 5, pathfinding.GetGrid().GetCellSize() / 5, 1);
             NetworkServer.Spawn(monsterInstance, connectionToClient);
             monsterInstance.layer = 9;
 
-            RpcUpdateMonster(monsterInstance, monsterName, x.ToString() + "/" + y.ToString());
+            CmdAddToInitList(monsterInstance, monsterInitiative);
+
+            RpcUpdateMonster(monsterInstance, monsterName, monsterCounter);
         }
     }
 
+    //Method to update a monster on all clients
     [ClientRpc]
-    void RpcUpdateMonster(GameObject monster, string monsterName, string position)
+    void RpcUpdateMonster(GameObject monster, string monsterName, int monsterCounter)
     {
+        Debug.Log("HOST AAA");
         switch (monsterName)
         {
             case "Goblin":
@@ -298,10 +363,11 @@ public class DNDHost : NetworkBehaviour
                 monsterSprite = monsterSprites[5];
                 break;
         }
-        monster.name = monsterName + " " + position;
+        monster.name = monsterName + "/" + monsterCounter;
         monster.GetComponent<SpriteRenderer>().sprite = monsterSprite;
     }
 
+    //Method to create a path object
     [Command]
     void cmdCreatePath(Vector3 cellPos)
     {
@@ -312,6 +378,7 @@ public class DNDHost : NetworkBehaviour
         movementPathGameObjects.Add(path);
     }
 
+    //Method to destroy path objects
     [Command]
     void cmdDestroyPath()
     {
@@ -324,6 +391,7 @@ public class DNDHost : NetworkBehaviour
         }
     }
 
+    //Method to create a wall object
     [Command]
     void cmdQuad()
     {
@@ -356,6 +424,7 @@ public class DNDHost : NetworkBehaviour
         }
     }
 
+    //Method to update all clients grid
     [ClientRpc]
     void RpcQuad(int x, int y, bool createDestroy)
     {
@@ -369,6 +438,7 @@ public class DNDHost : NetworkBehaviour
         }
     }
 
+    //Method to create a rough-terrain object
     [Command]
     void cmdRoughTerrain()
     {
@@ -401,6 +471,7 @@ public class DNDHost : NetworkBehaviour
         }
     }
 
+    //Method to update all clients grid
     [ClientRpc]
     void RpcRoughTerrain(int x, int y, bool createDestroy)
     {
@@ -429,7 +500,7 @@ public class DNDHost : NetworkBehaviour
             var pointB = movementPath[i + 1];
 
             //steps between each cell
-            int steps = 10;
+            int steps = 20;
 
             //time to move from cell to cell
             const float durationPerTile = 0.5f;
@@ -453,6 +524,7 @@ public class DNDHost : NetworkBehaviour
         state = Mode.Idle;
     }
 
+    //Method to move monster along path
     public void cmdtoggleWalk()
     {
         if (movementPath.Count > 0)

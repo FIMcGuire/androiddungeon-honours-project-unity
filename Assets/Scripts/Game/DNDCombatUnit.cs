@@ -24,19 +24,28 @@ public class DNDCombatUnit : NetworkBehaviour
     private Pathfinding pathfinding = Pathfinding.Instance;
 
     //NetworkManager
-    private NetworkManagerDND networkManager;
+    private NetworkManagerDND networkManager = NetworkManager.singleton as NetworkManagerDND;
 
     private bool walking = false;
 
     public void Start()
     {
-        networkManager = GameObject.Find("NetworkManager").GetComponent<NetworkManagerDND>();
-
         //Code to ensure scale of player game objects match scale of Grid
         //transform.localScale = new Vector3(pathfinding.GetGrid().GetCellSize() / 5, pathfinding.GetGrid().GetCellSize() / 5, 1);
 
         //Code to move player game objects to 0,0 on Grid FIND A BETTER WAY SO THAT TWO OBJECTS CANNOT OCCUPY SAME SPACE
         //transform.position = new Vector3(0, 0) * pathfinding.GetGrid().GetCellSize() + Vector3.one * pathfinding.GetGrid().GetCellSize() * .5f;
+
+        int init = 0;
+        foreach (var gamer in networkManager.GamePlayers)
+        {
+            if (gamer.hasAuthority)
+            {
+                init = int.Parse(gamer.playerStats[9]);
+            }
+        }
+
+        CmdAddToList(init);
     }
 
     public override void OnStartAuthority()
@@ -124,7 +133,7 @@ public class DNDCombatUnit : NetworkBehaviour
                         Vector3 cellPos = new Vector3(x, y) * pathfinding.GetGrid().GetCellSize() + Vector3.one * pathfinding.GetGrid().GetCellSize() * .5f;
                         cellPos.z = -1;
                         movementPath.Add(cellPos);
-
+                        Debug.Log(cellPos.x + "/" + cellPos.y);
                         cmdCreatePath(cellPos);
                         if (node.isRoughTerrain)
                         {
@@ -138,6 +147,12 @@ public class DNDCombatUnit : NetworkBehaviour
                 }
             }           
         }
+    }
+
+    [Command]
+    private void CmdAddToList(int init)
+    {   
+        GameObject.Find("Host").GetComponent<DNDHost>().CmdAddToInitList(this.gameObject, init);
     }
 
     [Command]
@@ -165,7 +180,7 @@ public class DNDCombatUnit : NetworkBehaviour
             {
                 NetworkServer.Destroy(pathObject);
             }
-        }   
+        }
     }
 
     //This seems like a poor way to do this but it works for now
@@ -181,7 +196,7 @@ public class DNDCombatUnit : NetworkBehaviour
             var pointB = movementPath[i+1];
             
             //steps between each cell
-            int steps = 10;
+            int steps = 20;
 
             //time to move from cell to cell
             const float durationPerTile = 0.5f;

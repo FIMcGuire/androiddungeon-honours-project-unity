@@ -73,7 +73,7 @@ public class NetworkRoomPlayerDND : NetworkBehaviour
 
         List<string> stats = new List<string>() { PlayerStatInput.StrengthStat.ToString(), PlayerStatInput.DexterityStat.ToString(), PlayerStatInput.ConstitutionStat.ToString(),
             PlayerStatInput.WisdomStat.ToString(), PlayerStatInput.IntelligenceStat.ToString(), PlayerStatInput.CharismaStat.ToString(), PlayerCurrentStatInput.HealthStat,
-            PlayerCurrentStatInput.ArmorClassStat, PlayerCurrentStatInput.SpeedStat};
+            PlayerCurrentStatInput.ArmorClassStat, PlayerCurrentStatInput.SpeedStat, PlayerCurrentStatInput.InitStat};
 
         string icon = PlayerStatInput.Icon;
 
@@ -117,7 +117,6 @@ public class NetworkRoomPlayerDND : NetworkBehaviour
     }
     public void HandleMapChanged(int oldValue, int newValue)
     {
-        Debug.Log(DisplayName + " VALUE CHANGED");
         foreach (var player in Room.RoomPlayers)
         {
             player.mapCounter = newValue;
