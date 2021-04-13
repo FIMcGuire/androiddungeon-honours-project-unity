@@ -49,7 +49,7 @@ public class DNDHost : NetworkBehaviour
     private Pathfinding pathfinding = Pathfinding.Instance;
 
     //NetworkManager instance
-    private NetworkManagerDND networkManager = NetworkManager.singleton as NetworkManagerDND; 
+    private NetworkManagerDND networkManager = NetworkManager.singleton as NetworkManagerDND;
 
     //State machine
     private enum Mode
@@ -171,21 +171,21 @@ public class DNDHost : NetworkBehaviour
     void HandleHostControls()
     {
         if (hasAuthority)
-        { 
+        {
             //Create a wall if in Wall mode
-            if (Input.GetMouseButtonDown(0) && state == Mode.Walls && isServer)
+            if (Input.touchCount < 2 && Input.GetMouseButtonDown(0) && state == Mode.Walls && isServer)
             {
                 cmdQuad();
             }
 
             //Create a rough-terrain if in rough-terrain mode
-            if (Input.GetMouseButtonDown(0) && state == Mode.RoughTerrain && isServer)
+            if (Input.touchCount < 2 && Input.GetMouseButtonDown(0) && state == Mode.RoughTerrain && isServer)
             {
                 cmdRoughTerrain();
             }
 
             //Select a monster using raycast2D
-            if (Input.GetMouseButtonDown(0) && isServer && !walking)
+            if (Input.touchCount < 2 && Input.GetMouseButtonDown(0) && isServer && !walking)
             {
                 var hit = Physics2D.Raycast(new Vector2(Camera.main.ScreenToWorldPoint(Input.mousePosition).x, Camera.main.ScreenToWorldPoint(Input.mousePosition).y), Vector2.zero, 0f);
 
@@ -193,7 +193,7 @@ public class DNDHost : NetworkBehaviour
                 {
                     if (hit.transform.gameObject.GetComponent<NetworkIdentity>().connectionToClient != connectionToClient) { return; }
 
-                    if (selectedMonster != null)
+                    if (selectedMonster != null && selectedMonster != hit.transform.gameObject)
                         selectedMonster.GetComponent<SpriteRenderer>().color = Color.white;
 
                     selectedMonster = hit.transform.gameObject;
@@ -208,8 +208,30 @@ public class DNDHost : NetworkBehaviour
                 }
             }
 
+            if (LongClick.IsLongClick(0))
+            {
+                var hit = Physics2D.Raycast(new Vector2(Camera.main.ScreenToWorldPoint(Input.mousePosition).x, Camera.main.ScreenToWorldPoint(Input.mousePosition).y), Vector2.zero, 0f);
+                
+                if (hit)
+                {
+                    if (hit.transform.gameObject.GetComponent<NetworkIdentity>().connectionToClient != connectionToClient) { return; }
+
+                    if (selectedMonster != null && selectedMonster != hit.transform.gameObject)
+                        selectedMonster.GetComponent<SpriteRenderer>().color = Color.white;
+
+                    foreach (var item in initiatives)
+                    {
+                        if (item.obj == hit.transform.gameObject)
+                        {
+                            CmdRemoveFromInitList(hit.transform.gameObject);
+                            break;
+                        }
+                    }
+                }
+            }
+
             //create a movement path for a selected monster
-            if (Input.GetMouseButtonDown(0) && state == Mode.Movement && selectedMonster != null && !walking && movementSpeed > 0)
+            if (Input.touchCount < 2 && Input.GetMouseButtonDown(0) && state == Mode.Movement && selectedMonster != null && !walking && movementSpeed > 0)
             {
                 //Get the coordinates of the mouse and the dwarf
                 Vector3 mouseWorldPosition = Utils.GetMouseWorldPosition();
@@ -254,7 +276,7 @@ public class DNDHost : NetworkBehaviour
                         cmdCreatePath(cellPos);
                         if (node.isRoughTerrain)
                         {
-                            movementSpeed-=2;
+                            movementSpeed -= 2;
                         }
                         else
                         {
@@ -265,7 +287,7 @@ public class DNDHost : NetworkBehaviour
             }
 
             //Create a monster if in spawn mode
-            if (Input.GetMouseButtonDown(0) && state == Mode.Spawn)
+            if (Input.touchCount < 2 && Input.GetMouseButtonDown(0) && state == Mode.Spawn)
             {
                 cmdSpawnNPC();
                 state = Mode.Idle;
@@ -286,14 +308,51 @@ public class DNDHost : NetworkBehaviour
         test.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = obj.name;
         test.transform.parent = parent;
         test.transform.localScale = new Vector3(1, 1, 0);
-        monsterCounter++;
         monsterInitiative = 0;
         initiatives.Sort();
 
         int counter = 0;
         foreach (Initiative item in initiatives)
         {
-            foreach (Transform initObject in HostCanvasObject.Find("Initiative_Panel").GetChild(0).GetChild(0))
+            foreach (Transform initObject in parent)
+            {
+                if (item.obj.name == initObject.name)
+                {
+                    initObject.SetSiblingIndex(counter);
+                }
+            }
+            counter++;
+        }
+    }
+
+    [Command]
+    public void CmdRemoveFromInitList(GameObject gameObject)
+    {
+        var parent = HostCanvasObject.Find("Initiative_Panel").GetChild(0).GetChild(0);
+
+        foreach (Initiative item in initiatives)
+        {
+            if (item.obj.name == gameObject.name)
+            {
+                initiatives.Remove(item);
+                initiatives.Sort();
+                break;
+            }
+        }
+
+        foreach (Transform initObject in parent)
+        {
+            if (gameObject.name == initObject.name)
+            {
+                Destroy(initObject.gameObject);
+                NetworkServer.Destroy(gameObject);
+            }
+        }
+
+        int counter = 0;
+        foreach (Initiative item in initiatives)
+        {
+            foreach (Transform initObject in parent)
             {
                 if (item.obj.name == initObject.name)
                 {
@@ -334,6 +393,8 @@ public class DNDHost : NetworkBehaviour
             CmdAddToInitList(monsterInstance, monsterInitiative);
 
             RpcUpdateMonster(monsterInstance, monsterName, monsterCounter);
+
+            monsterCounter++;
         }
     }
 
@@ -459,7 +520,7 @@ public class DNDHost : NetworkBehaviour
                 //quadList.Add(tester);
                 tester.transform.localScale = new Vector3(pathfinding.GetGrid().GetCellSize(), pathfinding.GetGrid().GetCellSize(), 1);
                 NetworkServer.Spawn(tester);
-                RpcRoughTerrain(x,y,true);
+                RpcRoughTerrain(x, y, true);
             }
             else
             {

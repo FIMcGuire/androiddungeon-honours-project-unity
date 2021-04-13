@@ -92,7 +92,7 @@ public class DNDCombatUnit : NetworkBehaviour
             fieldOfView.SetOrigin(transform.position);
 
             //if middle mouse click, add nearby cell to list of movement
-            if (Input.GetMouseButtonDown(0) && !walking && movementSpeed > 0)
+            if (Input.touchCount < 2 && Input.GetMouseButtonDown(0) && !walking && movementSpeed > 0)
             {
                 //Get the coordinates of the mouse and the dwarf
                 Vector3 mouseWorldPosition = Utils.GetMouseWorldPosition();

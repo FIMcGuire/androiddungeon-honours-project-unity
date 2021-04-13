@@ -101,7 +101,7 @@ public class SpawnSystem : NetworkBehaviour
                             playerInstance.GetComponent<SpriteRenderer>().sprite = sprite;
                             break;
                         }
-                    }      
+                    }
                 }
             }
             

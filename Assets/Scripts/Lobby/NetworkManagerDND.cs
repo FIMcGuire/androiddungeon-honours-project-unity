@@ -4,11 +4,15 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using TMPro;
+using System.Net.Sockets;
+using System.Net;
 
 public class NetworkManagerDND : NetworkManager
 {
     //min number of players in order to start game
     [SerializeField] private int minPlayers = 2;
+    [SerializeField] private TextMeshProUGUI IP = null;
     //scene for the menuScene (i.e. scene game starts on)
     [Scene] [SerializeField] private string menuScene = string.Empty;
 
@@ -79,6 +83,19 @@ public class NetworkManagerDND : NetworkManager
         if (SceneManager.GetActiveScene().path == menuScene)
         {
             bool isLeader = RoomPlayers.Count == 0;
+
+            if (isLeader)
+            {
+                string localIP;
+                using (Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0))
+                {
+                    socket.Connect("8.8.8.8", 65530);
+                    IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
+                    localIP = endPoint.Address.ToString();
+                }
+                Debug.Log(localIP);
+                IP.SetText("IP Address: " + "\n" + localIP);
+            }
 
             NetworkRoomPlayerDND roomPlayerInstance = Instantiate(roomPlayerPrefab);
 
