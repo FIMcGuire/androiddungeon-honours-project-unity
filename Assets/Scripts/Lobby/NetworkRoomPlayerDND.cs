@@ -73,7 +73,7 @@ public class NetworkRoomPlayerDND : NetworkBehaviour
 
         List<string> stats = new List<string>() { PlayerStatInput.StrengthStat.ToString(), PlayerStatInput.DexterityStat.ToString(), PlayerStatInput.ConstitutionStat.ToString(),
             PlayerStatInput.WisdomStat.ToString(), PlayerStatInput.IntelligenceStat.ToString(), PlayerStatInput.CharismaStat.ToString(), PlayerCurrentStatInput.HealthStat,
-            PlayerCurrentStatInput.ArmorClassStat, PlayerCurrentStatInput.SpeedStat, PlayerCurrentStatInput.InitStat};
+            PlayerCurrentStatInput.ArmorClassStat, PlayerCurrentStatInput.SpeedStat, PlayerCurrentStatInput.InitStat, PlayerCurrentStatInput.LevelStat};
 
         string icon = PlayerStatInput.Icon;
 
@@ -100,7 +100,6 @@ public class NetworkRoomPlayerDND : NetworkBehaviour
     public void HandleDisplayNameChanged(string oldValue, string newValue) => UpdateDisplay();
     public void HandleWidthChanged(int oldValue, int newValue)
     {
-        Debug.Log(DisplayName + " VALUE CHANGED");
         foreach (var player in Room.RoomPlayers)
         {
             player.width = newValue;
@@ -109,7 +108,6 @@ public class NetworkRoomPlayerDND : NetworkBehaviour
 
     public void HandleHeightChanged(int oldValue, int newValue)
     {
-        Debug.Log(DisplayName + " VALUE CHANGED");
         foreach (var player in Room.RoomPlayers)
         {
             player.height = newValue;

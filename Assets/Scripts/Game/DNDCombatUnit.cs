@@ -158,7 +158,12 @@ public class DNDCombatUnit : NetworkBehaviour
     [Command]
     public void cmdDisconnect()
     {
-        networkManager.OnServerDisconnect(connectionToClient);
+        if (NetworkServer.active && NetworkClient.isConnected)
+            networkManager.StopHost();
+        else if (NetworkClient.isConnected)
+            networkManager.StopClient();
+        else if (NetworkServer.active)
+            networkManager.StopServer();
     }
 
     [Command]

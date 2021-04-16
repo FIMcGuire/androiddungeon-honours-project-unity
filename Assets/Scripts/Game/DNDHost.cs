@@ -367,7 +367,12 @@ public class DNDHost : NetworkBehaviour
     [Command]
     public void cmdDisconnect()
     {
-        networkManager.OnServerDisconnect(connectionToClient);
+        if (NetworkServer.active && NetworkClient.isConnected)
+            networkManager.StopHost();
+        else if (NetworkClient.isConnected)
+            networkManager.StopClient();
+        else if (NetworkServer.active)
+            networkManager.StopServer();
     }
 
     //Method to spawn a monster
@@ -402,7 +407,6 @@ public class DNDHost : NetworkBehaviour
     [ClientRpc]
     void RpcUpdateMonster(GameObject monster, string monsterName, int monsterCounter)
     {
-        Debug.Log("HOST AAA");
         switch (monsterName)
         {
             case "Goblin":

@@ -37,8 +37,26 @@ public class SpawnSystem : NetworkBehaviour
     //method called from PlayerSpawnPoint removes coords from list
     public static void RemoveSpawnPoint(Transform transform) => spawnPoints.Remove(transform);
 
-    //when server starts and calls OnServerReadied event, call SpawnPlayer method
+    //when server starts and player calls OnServerReadied event, call SpawnPlayer method
     public override void OnStartServer() => NetworkManagerDND.OnServerReadied += SpawnPlayer;
+
+    void Awake()
+    {
+        //get coords of grid 0,0 and instantiate spawnpoint prefab there
+        pathfinding.GetGrid().GetXY(new Vector3(0, 0), out int x, out int y);
+
+        int counter = 0;
+        foreach (var gamer in networkManager.GamePlayers)
+        {
+            if (!gamer.IsLeader)
+            {
+                Vector3 cell = new Vector3(x + counter, y) * pathfinding.GetGrid().GetCellSize() + Vector3.one * pathfinding.GetGrid().GetCellSize() * .5f;
+                cell.z = 0;
+                Instantiate(spawnPoint, cell, Quaternion.identity);
+                counter++;
+            }
+        }
+    }
 
     //when players leaves, call event and remove player
     [ServerCallback]
@@ -48,20 +66,12 @@ public class SpawnSystem : NetworkBehaviour
     [Server]
     public void SpawnPlayer(NetworkConnection conn)
     {
-        //get coords of grid 0,0 and instantiate spawnpoint prefab there
-        pathfinding.GetGrid().GetXY(new Vector3(0,0), out int x, out int y);
-        Vector3 cell = new Vector3(x + nextIndex, y) * pathfinding.GetGrid().GetCellSize() + Vector3.one * pathfinding.GetGrid().GetCellSize() * .5f;
-        cell.z = 0;
-        Instantiate(spawnPoint, cell, Quaternion.identity);
-
         //coords of current spawnPoint (from nextIndex counter)
         Transform listSpawnPoint = spawnPoints.ElementAtOrDefault(nextIndex);
-        Debug.Log("index: " + nextIndex);
 
         //if null ERROR
         if(listSpawnPoint == null)
         {
-            Debug.LogError($"Missing spawn point for player {nextIndex}");
             return;
         }
 
