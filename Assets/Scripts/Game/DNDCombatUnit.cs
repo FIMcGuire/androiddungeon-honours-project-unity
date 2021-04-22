@@ -28,6 +28,20 @@ public class DNDCombatUnit : NetworkBehaviour
 
     private bool walking = false;
 
+    private bool CharacterSheetOpen = false;
+
+    public void OpenCharacterSheet(GameObject characterSheet)
+    {
+        if (characterSheet.activeInHierarchy)
+        {
+            CharacterSheetOpen = true;
+        }
+        else
+        {
+            CharacterSheetOpen = false;
+        }
+    }
+
     public void Start()
     {
         //Code to ensure scale of player game objects match scale of Grid
@@ -92,7 +106,7 @@ public class DNDCombatUnit : NetworkBehaviour
             fieldOfView.SetOrigin(transform.position);
 
             //if middle mouse click, add nearby cell to list of movement
-            if (Input.touchCount < 2 && Input.GetMouseButtonDown(0) && !walking && movementSpeed > 0)
+            if (Input.touchCount < 2 && Input.GetMouseButtonDown(0) && !walking && movementSpeed > 0 && !CharacterSheetOpen)
             {
                 //Get the coordinates of the mouse and the dwarf
                 Vector3 mouseWorldPosition = Utils.GetMouseWorldPosition();

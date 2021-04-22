@@ -40,6 +40,11 @@ public class SpawnSystem : NetworkBehaviour
     //when server starts and player calls OnServerReadied event, call SpawnPlayer method
     public override void OnStartServer() => NetworkManagerDND.OnServerReadied += SpawnPlayer;
 
+    //when players leaves, call event and remove player
+    [ServerCallback]
+    private void OnDestroy() => NetworkManagerDND.OnServerReadied -= SpawnPlayer;
+
+    //Called before Start() when script instance being loaded
     void Awake()
     {
         //get coords of grid 0,0 and instantiate spawnpoint prefab there
@@ -58,10 +63,6 @@ public class SpawnSystem : NetworkBehaviour
         }
     }
 
-    //when players leaves, call event and remove player
-    [ServerCallback]
-    private void OnDestroy() => NetworkManagerDND.OnServerReadied -= SpawnPlayer;
-
     //Server code to spawn player prefabs on every client instance
     [Server]
     public void SpawnPlayer(NetworkConnection conn)
@@ -69,13 +70,13 @@ public class SpawnSystem : NetworkBehaviour
         //coords of current spawnPoint (from nextIndex counter)
         Transform listSpawnPoint = spawnPoints.ElementAtOrDefault(nextIndex);
 
-        //if null ERROR
+        //if null, return
         if(listSpawnPoint == null)
         {
             return;
         }
 
-        //Determine who the host is, and create HOST game object not player object
+        //Determine who the host is
         NetworkGamePlayerDND player = null;
         foreach (var gamer in networkManager.GamePlayers)
         {
@@ -86,6 +87,7 @@ public class SpawnSystem : NetworkBehaviour
             }
         }
 
+        //If conn is the HOST client spawn Host prefab, else spawn player prefab
         if (conn == player.connectionToClient)
         {
             //instantiate host prefab at 0,0,0 and then tie it to the host's client connection
@@ -136,15 +138,5 @@ public class SpawnSystem : NetworkBehaviour
                 player.GetComponent<SpriteRenderer>().sprite = sprite;
             }
         }
-    }
-
-    [Server]
-    public void SpawnMonster(NetworkConnection conn, Vector3 location, Sprite monsterType)
-    {
-        //instantiate player prefab at current spawnpoint location and then tie it to client connection
-        var monsterInstance = Instantiate(monsterPrefab, location, Quaternion.identity);
-        monsterInstance.GetComponent<SpriteRenderer>().sprite = monsterType;
-        monsterInstance.transform.localScale = new Vector3(pathfinding.GetGrid().GetCellSize() / 5, pathfinding.GetGrid().GetCellSize() / 5, 1);
-        NetworkServer.Spawn(monsterInstance, conn);
     }
 }

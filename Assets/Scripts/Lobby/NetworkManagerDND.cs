@@ -78,14 +78,19 @@ public class NetworkManagerDND : NetworkManager
         }
     }
 
+    //Method called when a client connects to the server, including the host's client instance
     public override void OnServerAddPlayer(NetworkConnection conn)
     {
+        //Determine if the active scene is the menu scene
         if (SceneManager.GetActiveScene().path == menuScene)
         {
+            //Set bool true if there is only one client connection
             bool isLeader = RoomPlayers.Count == 0;
 
+            //if isLeader is true, determine devices IP Address
             if (isLeader)
             {
+                //Open a temporary socket to determine device IPv4 or IPv6 address
                 string localIP;
                 using (Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0))
                 {
@@ -93,14 +98,16 @@ public class NetworkManagerDND : NetworkManager
                     IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
                     localIP = endPoint.Address.ToString();
                 }
-                Debug.Log(localIP);
+                //Set IP text to IP Address
                 IP.SetText("IP Address: " + "\n" + localIP);
             }
 
+            //Create NetworkRoomPlayerDND instance equal to instantiated prefab
             NetworkRoomPlayerDND roomPlayerInstance = Instantiate(roomPlayerPrefab);
-
+            //Set IsLeader value of object equal to isLeader variable
             roomPlayerInstance.IsLeader = isLeader;
 
+            //Tie gameobject to client connection and spawn object
             NetworkServer.AddPlayerForConnection(conn, roomPlayerInstance.gameObject);
         }
     }
