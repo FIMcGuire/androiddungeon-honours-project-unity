@@ -12,7 +12,6 @@ public class NetworkManagerDND : NetworkManager
 {
     //min number of players in order to start game
     [SerializeField] private int minPlayers = 2;
-    [SerializeField] private TextMeshProUGUI IP = null;
     //scene for the menuScene (i.e. scene game starts on)
     [Scene] [SerializeField] private string menuScene = string.Empty;
 
@@ -99,7 +98,7 @@ public class NetworkManagerDND : NetworkManager
                     localIP = endPoint.Address.ToString();
                 }
                 //Set IP text to IP Address
-                IP.SetText("IP Address: " + "\n" + localIP);
+                GameObject.Find("IPAddress").GetComponent<TextMeshProUGUI>().SetText("IP Address: " + "\n" + localIP);
             }
 
             //Create NetworkRoomPlayerDND instance equal to instantiated prefab
